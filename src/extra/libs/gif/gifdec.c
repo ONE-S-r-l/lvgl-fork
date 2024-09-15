@@ -5,7 +5,7 @@
 #if LV_USE_GIF
 
 #include <stdlib.h>
-#include <string.h>
+#include "../../../custom/custom_string.h"
 #include <stdbool.h>
 
 #define MIN(A, B) ((A) < (B) ? (A) : (B))

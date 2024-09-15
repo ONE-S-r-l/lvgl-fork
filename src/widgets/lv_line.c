@@ -14,7 +14,7 @@
 #include "../misc/lv_math.h"
 #include <stdbool.h>
 #include <stdint.h>
-#include <string.h>
+#include "../custom/custom_string.h"
 
 /*********************
  *      DEFINES

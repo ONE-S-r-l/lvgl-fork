@@ -10,7 +10,7 @@
 
 #include "../misc/lv_assert.h"
 #include "lv_ll.h"
-#include <string.h>
+#include "../custom/custom_string.h"
 #include "lv_gc.h"
 
 /*********************

@@ -17,7 +17,7 @@ extern "C" {
 
 #include <stdint.h>
 #include <stddef.h>
-#include <string.h>
+#include "../custom/custom_string.h"
 
 #include "lv_types.h"
 

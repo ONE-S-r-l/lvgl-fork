@@ -509,12 +509,12 @@ typedef char stbtt__check_size16[sizeof(stbtt_int16) == 2 ? 1 : -1];
 #endif
 
 #ifndef STBTT_strlen
-    #include <string.h>
+    #include "../../../custom/custom_string.h"
     #define STBTT_strlen(x)    strlen(x)
 #endif
 
 #ifndef STBTT_memcpy
-    #include <string.h>
+    #include "../../../custom/custom_string.h"
     #define STBTT_memcpy       memcpy
     #define STBTT_memset       memset
 #endif

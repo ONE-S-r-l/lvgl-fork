@@ -26,7 +26,7 @@ freely, subject to the following restrictions:
 #ifndef LODEPNG_H
 #define LODEPNG_H
 
-#include <string.h> /*for size_t*/
+#include "../../../custom/custom_string.h" /*for size_t*/
 
 #include "../../../lvgl.h"
 #if LV_USE_PNG

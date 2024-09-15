@@ -19,7 +19,7 @@
 #include "../misc/lv_anim.h"
 #include "../misc/lv_math.h"
 #include "../misc/lv_txt_ap.h"
-#include <string.h>
+#include "../custom/custom_string.h"
 
 /*********************
  *      DEFINES

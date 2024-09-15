@@ -9,7 +9,7 @@
 #include "../../../lvgl.h"
 #if LV_USE_BMP
 
-#include <string.h>
+#include "../../../custom/custom_string.h"
 
 /*********************
  *      DEFINES

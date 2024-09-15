@@ -7,7 +7,7 @@
  *      INCLUDES
  *********************/
 #include <stddef.h>
-#include <string.h>
+#include "../custom/custom_string.h"
 #include "lv_img_buf.h"
 #include "lv_draw_img.h"
 #include "../misc/lv_math.h"

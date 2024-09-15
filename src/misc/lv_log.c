@@ -10,7 +10,7 @@
 #if LV_USE_LOG
 
 #include <stdarg.h>
-#include <string.h>
+#include "../custom/custom_string.h"
 #include "lv_printf.h"
 #include "../hal/lv_hal_tick.h"
 

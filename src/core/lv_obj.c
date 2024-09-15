@@ -24,7 +24,7 @@
 #include "../hal/lv_hal.h"
 #include "../extra/lv_extra.h"
 #include <stdint.h>
-#include <string.h>
+#include "../custom/custom_string.h"
 
 #if LV_USE_GPU_STM32_DMA2D
     #include "../draw/stm32_dma2d/lv_gpu_stm32_dma2d.h"

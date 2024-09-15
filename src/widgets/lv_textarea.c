@@ -9,7 +9,7 @@
 #include "lv_textarea.h"
 #if LV_USE_TEXTAREA != 0
 
-#include <string.h>
+#include "../custom/custom_string.h"
 #include "../misc/lv_assert.h"
 #include "../core/lv_group.h"
 #include "../core/lv_refr.h"

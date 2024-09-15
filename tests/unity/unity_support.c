@@ -17,7 +17,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
+#include "../custom/custom_string.h"
 #include <stdarg.h>
 #include "unity.h"
 #define PNG_DEBUG 3
