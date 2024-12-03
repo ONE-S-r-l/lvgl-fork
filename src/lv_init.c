@@ -464,6 +464,11 @@ void lv_deinit(void)
 
 }
 
+int swprintf (wchar_t* ws, size_t len, const wchar_t* format, ...)
+{
+    return 0;   
+}
+
 /**********************
  *   STATIC FUNCTIONS
  **********************/

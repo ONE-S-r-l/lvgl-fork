@@ -1834,11 +1834,11 @@ void rasterXYFlip(uint32_t* src, uint32_t* dst, int32_t stride, int32_t w, int32
         dst += ((bbox.min.x * stride) + bbox.min.y);
     }
 
-    for (int x = 0; x < w; x += BLOCK) {
+    for (int32_t x = 0; x < w; x += BLOCK) {
         auto bx = std::min(w, x + BLOCK) - x;
         auto in = &src[x];
         auto out = &dst[x * stride];
-        for (int y = 0; y < h; y += BLOCK) {
+        for (int32_t y = 0; y < h; y += BLOCK) {
             auto p = &in[y * stride];
             auto q = &out[y];
             auto by = std::min(h, y + BLOCK) - y;
