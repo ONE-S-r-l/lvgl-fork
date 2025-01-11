@@ -64,7 +64,7 @@ extern GPU2D_HandleTypeDef hgpu2d;
  *  STATIC VARIABLES
  **********************/
 
-static uint8_t nemagfx_pool_mem[NEMAGFX_MEM_POOL_SIZE]; /* NemaGFX memory pool */
+static uint8_t nemagfx_pool_mem[NEMAGFX_MEM_POOL_SIZE] __attribute__((section("Nemagfx_Memory_Pool_Buffer"))) __attribute__((aligned(4))); /* NemaGFX memory pool */
 
 static nema_ringbuffer_t ring_buffer_str;
 static volatile int last_cl_id = -1;
