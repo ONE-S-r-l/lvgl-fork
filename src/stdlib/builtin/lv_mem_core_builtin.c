@@ -21,6 +21,12 @@
     #include LV_MEM_POOL_INCLUDE
 #endif
 
+#ifdef STM32H7S7xx
+#define LVGL_WORKMEM_SECTION __attribute__((section("LVGL_WorkMem"))) __attribute__((aligned(4)))
+#else
+#define LVGL_WORKMEM_SECTION
+#endif
+
 /*********************
  *      DEFINES
  *********************/
@@ -79,7 +85,7 @@ void lv_mem_init(void)
     state.tlsf = lv_tlsf_create_with_pool((void *)LV_MEM_POOL_ALLOC(LV_MEM_SIZE), LV_MEM_SIZE);
 #else
     /*Allocate a large array to store the dynamically allocated data*/
-    static LV_ATTRIBUTE_LARGE_RAM_ARRAY MEM_UNIT work_mem_int[LV_MEM_SIZE / sizeof(MEM_UNIT)]  __attribute__((section("LVGL_WorkMem"))) __attribute__((aligned(4)));
+    static LV_ATTRIBUTE_LARGE_RAM_ARRAY MEM_UNIT work_mem_int[LV_MEM_SIZE / sizeof(MEM_UNIT)] LVGL_WORKMEM_SECTION;
     state.tlsf = lv_tlsf_create_with_pool((void *)work_mem_int, LV_MEM_SIZE);
 #endif
 #else
