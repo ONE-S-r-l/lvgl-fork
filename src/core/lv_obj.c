@@ -187,7 +187,7 @@ const lv_obj_class_t lv_obj_class = {
     .group_def = LV_OBJ_CLASS_GROUP_DEF_FALSE,
     .instance_size = (sizeof(lv_obj_t)),
     .base_class = NULL,
-    .name = "obj",
+    .name = "lv_obj",
 #if LV_USE_OBJ_PROPERTY
     .prop_index_start = LV_PROPERTY_OBJ_START,
     .prop_index_end = LV_PROPERTY_OBJ_END,
@@ -285,10 +285,8 @@ void lv_obj_remove_flag(lv_obj_t * obj, lv_obj_flag_t f)
 
     if(f & LV_OBJ_FLAG_HIDDEN) {
         lv_obj_invalidate(obj);
-        if(lv_obj_is_layout_positioned(obj)) {
-            lv_obj_mark_layout_as_dirty(lv_obj_get_parent(obj));
-            lv_obj_mark_layout_as_dirty(obj);
-        }
+        lv_obj_mark_layout_as_dirty(lv_obj_get_parent(obj));
+        lv_obj_mark_layout_as_dirty(obj);
     }
 
     if((was_on_layout != lv_obj_is_layout_positioned(obj)) || (f & (LV_OBJ_FLAG_LAYOUT_1 |  LV_OBJ_FLAG_LAYOUT_2))) {
@@ -438,8 +436,10 @@ void * lv_obj_get_id(const lv_obj_t * obj)
     return obj->id;
 }
 
-lv_obj_t * lv_obj_get_child_by_id(const lv_obj_t * obj, const void * id)
+lv_obj_t * lv_obj_find_by_id(const lv_obj_t * obj, const void * id)
 {
+    LV_LOG_WARN("DEPRECATED: IDs are used only to print the widget trees. To find a widget use obj_name");
+
     if(obj == NULL) obj = lv_display_get_screen_active(NULL);
     if(obj == NULL) return NULL;
 
@@ -453,7 +453,7 @@ lv_obj_t * lv_obj_get_child_by_id(const lv_obj_t * obj, const void * id)
     /*Search children*/
     for(i = 0; i < child_cnt; i++) {
         lv_obj_t * child = obj->spec_attr->children[i];
-        lv_obj_t * found = lv_obj_get_child_by_id(child, id);
+        lv_obj_t * found = lv_obj_find_by_id(child, id);
         if(found != NULL) return found;
     }
 
@@ -535,6 +535,11 @@ static void lv_obj_destructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
         }
 
         lv_event_remove_all(&obj->spec_attr->event_list);
+#if LV_USE_OBJ_NAME
+        if(obj->spec_attr->name && !obj->spec_attr->name_static) {
+            lv_free((void *)obj->spec_attr->name);
+        }
+#endif
 
 #if LV_DRAW_TRANSFORM_USE_MATRIX
         if(obj->spec_attr->matrix) {
@@ -588,7 +593,8 @@ static void lv_obj_draw(lv_event_t * e)
         }
 
         if(lv_obj_get_style_bg_grad_dir(obj, 0) != LV_GRAD_DIR_NONE) {
-            if(lv_obj_get_style_bg_grad_opa(obj, 0) < LV_OPA_MAX) {
+            if(lv_obj_get_style_bg_grad_opa(obj, 0) < LV_OPA_MAX ||
+               lv_obj_get_style_bg_main_opa(obj, 0) < LV_OPA_MAX) {
                 info->res = LV_COVER_RES_NOT_COVER;
                 return;
             }
@@ -609,6 +615,7 @@ static void lv_obj_draw(lv_event_t * e)
         lv_layer_t * layer = lv_event_get_layer(e);
         lv_draw_rect_dsc_t draw_dsc;
         lv_draw_rect_dsc_init(&draw_dsc);
+        draw_dsc.base.layer = layer;
 
         lv_obj_init_draw_rect_dsc(obj, LV_PART_MAIN, &draw_dsc);
         /*If the border is drawn later disable loading its properties*/
@@ -637,6 +644,7 @@ static void lv_obj_draw(lv_event_t * e)
             draw_dsc.bg_image_opa = LV_OPA_TRANSP;
             draw_dsc.outline_opa = LV_OPA_TRANSP;
             draw_dsc.shadow_opa = LV_OPA_TRANSP;
+            draw_dsc.base.layer = layer;
             lv_obj_init_draw_rect_dsc(obj, LV_PART_MAIN, &draw_dsc);
 
             int32_t w = lv_obj_get_style_transform_width(obj, LV_PART_MAIN);

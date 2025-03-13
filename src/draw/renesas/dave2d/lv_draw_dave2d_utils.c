@@ -109,16 +109,13 @@ d2_u32 lv_draw_dave2d_lv_colour_fmt_to_d2_fmt(lv_color_format_t colour_format)
             d2_lvgl_mode = d2_mode_i4;
             break;
         case(LV_COLOR_FORMAT_I8):
-            d2_lvgl_mode = d2_mode_i4;
+            d2_lvgl_mode = d2_mode_i8;
             break;
         case(LV_COLOR_FORMAT_A8):
             d2_lvgl_mode = d2_mode_alpha8;
             break;
         case(LV_COLOR_FORMAT_RGB565):
             d2_lvgl_mode = d2_mode_rgb565;
-            break;
-        case(LV_COLOR_FORMAT_RGB888):
-            d2_lvgl_mode = d2_mode_rgb888;
             break;
         case(LV_COLOR_FORMAT_ARGB1555):
             d2_lvgl_mode = d2_mode_argb1555;
@@ -133,6 +130,7 @@ d2_u32 lv_draw_dave2d_lv_colour_fmt_to_d2_fmt(lv_color_format_t colour_format)
             d2_lvgl_mode = d2_mode_argb8888;
             break;
 
+        case(LV_COLOR_FORMAT_RGB888): //LV_COLOR_FORMAT_RGB888 is a 3 byte format, d2_mode_rgb888 is a 4 byte format, not supported
         default:
             LV_ASSERT(0);
             break;

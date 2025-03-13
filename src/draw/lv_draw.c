@@ -32,12 +32,15 @@
  *  STATIC PROTOTYPES
  **********************/
 static bool is_independent(lv_layer_t * layer, lv_draw_task_t * t_check);
-static void lv_cleanup_task(lv_draw_task_t * t, lv_display_t * disp);
+static void cleanup_task(lv_draw_task_t * t, lv_display_t * disp);
+static lv_draw_task_t * get_first_available_task(lv_layer_t * layer);
 
+#if LV_LOG_LEVEL <= LV_LOG_LEVEL_INFO
 static inline uint32_t get_layer_size_kb(uint32_t size_byte)
 {
     return (size_byte + 1023) >> 10;
 }
+#endif
 
 /**********************
  *  STATIC VARIABLES
@@ -80,8 +83,11 @@ void * lv_draw_create_unit(size_t size)
     lv_draw_unit_t * new_unit = lv_malloc_zeroed(size);
     LV_ASSERT_MALLOC(new_unit);
     new_unit->next = _draw_info.unit_head;
+
     _draw_info.unit_head = new_unit;
     _draw_info.unit_cnt++;
+
+    new_unit->idx = _draw_info.unit_cnt;
 
     return new_unit;
 }
@@ -93,6 +99,7 @@ lv_draw_task_t * lv_draw_add_task(lv_layer_t * layer, const lv_area_t * coords)
     LV_ASSERT_MALLOC(new_task);
     new_task->area = *coords;
     new_task->_real_area = *coords;
+    new_task->target_layer = layer;
     new_task->clip_area = layer->_clip_area;
 #if LV_DRAW_TRANSFORM_USE_MATRIX
     new_task->matrix = layer->matrix;
@@ -225,7 +232,7 @@ bool lv_draw_dispatch_layer(lv_display_t * disp, lv_layer_t * layer)
     while(t) {
         t_next = t->next;
         if(t->state == LV_DRAW_TASK_STATE_READY) {
-            lv_cleanup_task(t, disp);
+            cleanup_task(t, disp);
             if(t_prev != NULL)
                 t_prev->next = t_next;
             else
@@ -303,37 +310,20 @@ uint32_t lv_draw_get_unit_count(void)
     return _draw_info.unit_cnt;
 }
 
+lv_draw_task_t * lv_draw_get_available_task(lv_layer_t * layer, lv_draw_task_t * t_prev, uint8_t draw_unit_id)
+{
+    if(_draw_info.unit_cnt == 1) {
+        return get_first_available_task(layer);
+    }
+    else {
+        return lv_draw_get_next_available_task(layer, t_prev, draw_unit_id);
+    }
+}
+
 lv_draw_task_t * lv_draw_get_next_available_task(lv_layer_t * layer, lv_draw_task_t * t_prev, uint8_t draw_unit_id)
 {
     LV_PROFILER_DRAW_BEGIN;
 
-    /* If there is only 1 draw unit the task can be consumed linearly as
-     * they are added in the correct order. However, it can happen that
-     * there is a `LV_DRAW_TASK_TYPE_LAYER` which can be blended only when
-     * all its tasks are ready. As other areas might be on top of that
-     * layer-to-blend don't skip it. Instead stop there, so that the
-     * draw tasks of that layer can be consumed and can be finished.
-     * After that this layer-to-blenf will have `LV_DRAW_TASK_STATE_QUEUED`
-     * so it can be blended normally.*/
-    if(_draw_info.unit_cnt <= 1) {
-        lv_draw_task_t * t = layer->draw_task_head;
-        while(t) {
-            /*Not queued yet, leave this layer while the first task will be queued*/
-            if(t->state != LV_DRAW_TASK_STATE_QUEUED) {
-                t = NULL;
-                break;
-            }
-            /*It's a supported and queued task, process it*/
-            else {
-                break;
-            }
-            t = t->next;
-        }
-        LV_PROFILER_DRAW_END;
-        return t;
-    }
-
-    /*Handle the case of multiply draw units*/
 
     /*If the first task is screen sized, there cannot be independent areas*/
     if(layer->draw_task_head) {
@@ -385,6 +375,22 @@ uint32_t lv_draw_get_dependent_count(lv_draw_task_t * t_check)
     return cnt;
 }
 
+void lv_layer_init(lv_layer_t * layer)
+{
+    LV_ASSERT_NULL(layer);
+    lv_memzero(layer, sizeof(lv_layer_t));
+    lv_layer_reset(layer);
+}
+
+void lv_layer_reset(lv_layer_t * layer)
+{
+    LV_ASSERT_NULL(layer);
+#if LV_DRAW_TRANSFORM_USE_MATRIX
+    lv_matrix_identity(&layer->matrix);
+#endif
+    layer->opa = LV_OPA_COVER;
+}
+
 lv_layer_t * lv_draw_layer_create(lv_layer_t * parent_layer, lv_color_format_t color_format, const lv_area_t * area)
 {
     LV_PROFILER_DRAW_BEGIN;
@@ -397,6 +403,11 @@ lv_layer_t * lv_draw_layer_create(lv_layer_t * parent_layer, lv_color_format_t c
 
     lv_draw_layer_init(new_layer, parent_layer, color_format, area);
 
+    /*Inherits transparency from parent*/
+    if(parent_layer) {
+        new_layer->opa = parent_layer->opa;
+    }
+
     LV_PROFILER_DRAW_END;
     return new_layer;
 }
@@ -405,8 +416,7 @@ void lv_draw_layer_init(lv_layer_t * layer, lv_layer_t * parent_layer, lv_color_
                         const lv_area_t * area)
 {
     LV_PROFILER_DRAW_BEGIN;
-    LV_ASSERT_NULL(layer);
-    lv_memzero(layer, sizeof(lv_layer_t));
+    lv_layer_init(layer);
     lv_display_t * disp = lv_refr_get_disp_refreshing();
 
     layer->parent = parent_layer;
@@ -414,10 +424,6 @@ void lv_draw_layer_init(lv_layer_t * layer, lv_layer_t * parent_layer, lv_color_
     layer->buf_area = *area;
     layer->phy_clip_area = *area;
     layer->color_format = color_format;
-
-#if LV_DRAW_TRANSFORM_USE_MATRIX
-    lv_matrix_identity(&layer->matrix);
-#endif
 
     if(disp->layer_init) disp->layer_init(disp, layer);
 
@@ -532,7 +538,7 @@ static bool is_independent(lv_layer_t * layer, lv_draw_task_t * t_check)
  * @param t         pointer to a draw task
  * @param disp      pointer to a display on which the task was drawn
  */
-static void lv_cleanup_task(lv_draw_task_t * t, lv_display_t * disp)
+static void cleanup_task(lv_draw_task_t * t, lv_display_t * disp)
 {
     LV_PROFILER_DRAW_BEGIN;
     /*If it was layer drawing free the layer too*/
@@ -584,4 +590,33 @@ static void lv_cleanup_task(lv_draw_task_t * t, lv_display_t * disp)
     lv_free(t->draw_dsc);
     lv_free(t);
     LV_PROFILER_DRAW_END;
+}
+
+static lv_draw_task_t * get_first_available_task(lv_layer_t * layer)
+{
+    LV_PROFILER_DRAW_BEGIN;
+    /* If there is only 1 draw unit the task can be consumed linearly as
+     * they are added in the correct order. However, it can happen that
+     * there is a `LV_DRAW_TASK_TYPE_LAYER` which can be blended only when
+     * all its tasks are ready. As other areas might be on top of that
+     * layer-to-blend don't skip it. Instead stop there, so that the
+     * draw tasks of that layer can be consumed and can be finished.
+     * After that this layer-to-blenf will have `LV_DRAW_TASK_STATE_QUEUED`
+     * so it can be blended normally.*/
+    lv_draw_task_t * t = layer->draw_task_head;
+    while(t) {
+        /*Not queued yet, leave this layer while the first task is queued*/
+        if(t->state != LV_DRAW_TASK_STATE_QUEUED) {
+            t = NULL;
+            break;
+        }
+        /*It's a supported and queued task, process it*/
+        else {
+            break;
+        }
+        t = t->next;
+    }
+
+    LV_PROFILER_DRAW_END;
+    return t;
 }

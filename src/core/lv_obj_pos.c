@@ -887,10 +887,7 @@ bool lv_obj_area_is_visible(const lv_obj_t * obj, lv_area_t * area)
     /*The area is not on the object*/
     if(!lv_area_intersect(area, area, &obj_coords)) return false;
 
-    if(!is_transformed(obj)) {
-        *area = obj_coords;
-    }
-    else {
+    if(is_transformed(obj)) {
         lv_obj_get_transformed_area(obj, area, LV_OBJ_POINT_TRANSFORM_FLAG_RECURSIVE);
     }
 
@@ -907,10 +904,7 @@ bool lv_obj_area_is_visible(const lv_obj_t * obj, lv_area_t * area)
             lv_area_increase(&parent_coords, parent_ext_size, parent_ext_size);
         }
 
-        if(!is_transformed(parent)) {
-            parent_coords = parent->coords;
-        }
-        else {
+        if(is_transformed(parent)) {
             lv_obj_get_transformed_area(parent, &parent_coords, LV_OBJ_POINT_TRANSFORM_FLAG_RECURSIVE);
         }
         if(!lv_area_intersect(area, area, &parent_coords)) return false;

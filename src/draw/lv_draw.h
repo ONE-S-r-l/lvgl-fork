@@ -48,6 +48,7 @@ typedef enum {
     LV_DRAW_TASK_TYPE_FILL,
     LV_DRAW_TASK_TYPE_BORDER,
     LV_DRAW_TASK_TYPE_BOX_SHADOW,
+    LV_DRAW_TASK_TYPE_LETTER,
     LV_DRAW_TASK_TYPE_LABEL,
     LV_DRAW_TASK_TYPE_IMAGE,
     LV_DRAW_TASK_TYPE_LAYER,
@@ -96,6 +97,12 @@ struct _lv_layer_t  {
     /** Transform matrix to be applied when rendering the layer */
     lv_matrix_t matrix;
 #endif
+
+    /** Opacity of the layer */
+    lv_opa_t opa;
+
+    /** Partial y offset */
+    int32_t partial_y_offset;
 
     /** Linked list of draw tasks */
     lv_draw_task_t * draw_task_head;
@@ -192,11 +199,21 @@ void lv_draw_dispatch_request(void);
 uint32_t lv_draw_get_unit_count(void);
 
 /**
- * Find and available draw task
- * @param layer             the draw ctx to search in
+ * If there is only one draw unit check the first draw task if it's available.
+ * If there are multiple draw units call `lv_draw_get_next_available_task` to find a task.
+ * @param layer             the draw layer to search in
  * @param t_prev            continue searching from this task
  * @param draw_unit_id      check the task where `preferred_draw_unit_id` equals this value or `LV_DRAW_UNIT_NONE`
- * @return                  tan available draw task or NULL if there is no any
+ * @return                  an available draw task or NULL if there is not any
+ */
+lv_draw_task_t * lv_draw_get_available_task(lv_layer_t * layer, lv_draw_task_t * t_prev, uint8_t draw_unit_id);
+
+/**
+ * Find and available draw task
+ * @param layer             the draw layer to search in
+ * @param t_prev            continue searching from this task
+ * @param draw_unit_id      check the task where `preferred_draw_unit_id` equals this value or `LV_DRAW_UNIT_NONE`
+ * @return                  an available draw task or NULL if there is not any
  */
 lv_draw_task_t * lv_draw_get_next_available_task(lv_layer_t * layer, lv_draw_task_t * t_prev, uint8_t draw_unit_id);
 
@@ -209,6 +226,18 @@ lv_draw_task_t * lv_draw_get_next_available_task(lv_layer_t * layer, lv_draw_tas
  * @return          number of tasks depending on `t_check`
  */
 uint32_t lv_draw_get_dependent_count(lv_draw_task_t * t_check);
+
+/**
+ * Initialize a layer
+ * @param layer pointer to a layer to initialize
+ */
+void lv_layer_init(lv_layer_t * layer);
+
+/**
+ * Reset the layer to a drawable state
+ * @param layer pointer to a layer to reset
+ */
+void lv_layer_reset(lv_layer_t * layer);
 
 /**
  * Create (allocate) a new layer on a parent layer

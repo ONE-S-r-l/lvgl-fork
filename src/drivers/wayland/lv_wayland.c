@@ -120,7 +120,6 @@ struct input {
     lv_indev_touch_data_t touches[10];
     uint8_t touch_event_cnt;
     uint8_t primary_id;
-    lv_indev_gesture_recognizer_t recognizer;
 #endif
 };
 
@@ -2159,16 +2158,17 @@ static void destroy_window(struct window * window)
 
 static void _lv_wayland_flush(lv_display_t * disp, const lv_area_t * area, unsigned char * color_p)
 {
-    unsigned long offset;
     void * buf_base;
     struct wl_buffer * wl_buf;
-    uint32_t src_width;
-    uint32_t src_height;
+    int32_t src_width;
+    int32_t src_height;
     struct window * window;
+    struct application * app;
     smm_buffer_t * buf;
     struct wl_callback * cb;
     lv_display_rotation_t rot;
     uint8_t bpp;
+    int32_t x;
     int32_t y;
     int32_t w;
     int32_t h;
@@ -2176,9 +2176,10 @@ static void _lv_wayland_flush(lv_display_t * disp, const lv_area_t * area, unsig
     int32_t vres;
 
     window = lv_display_get_user_data(disp);
+    app = window->application;
     buf = window->body->pending_buffer;
-    src_width = (area->x2 - area->x1 + 1);
-    src_height = (area->y2 - area->y1 + 1);
+    src_width = lv_area_get_width(area);
+    src_height = lv_area_get_height(area);
     bpp = lv_color_format_get_size(LV_COLOR_FORMAT_NATIVE);
 
     rot = lv_display_get_rotation(disp);
@@ -2219,11 +2220,14 @@ static void _lv_wayland_flush(lv_display_t * disp, const lv_area_t * area, unsig
     }
 
     /* Modify specified area in buffer */
-    for(y = area->y1; y <= area->y2; y++) {
-        offset = ((area->x1 + (y * hres)) * bpp);
-        memcpy(((char *)buf_base) + offset,
-               color_p,
-               src_width * bpp);
+    for(y = 0; y < src_height; ++y) {
+        if(app->shm_format == WL_SHM_FORMAT_ARGB8888) {
+            for(x = 0; x < src_width; ++x) {
+                lv_color_premultiply((lv_color32_t *)color_p + x);
+            }
+        }
+        memcpy(((char *)buf_base) + ((((area->y1 + y) * hres) + area->x1) * bpp),
+               color_p, src_width * bpp);
         color_p += src_width * bpp;
     }
 
@@ -2377,24 +2381,21 @@ static void _lv_wayland_touch_read(lv_indev_t * drv, lv_indev_data_t * data)
 {
 
     struct window * window = lv_display_get_user_data(lv_indev_get_display(drv));
-    lv_indev_gesture_recognizer_t * recognizer;
 
     if(!window || window->closed) {
         return;
     }
 
     /* Collect touches if there are any - send them to the gesture recognizer */
-    recognizer = &window->body->input.recognizer;
+    lv_indev_gesture_recognizers_update(drv, &window->body->input.touches[0],
+                                        window->body->input.touch_event_cnt);
 
     LV_LOG_TRACE("collected touch events: %d", window->body->input.touch_event_cnt);
-
-    lv_indev_gesture_detect_pinch(recognizer, &window->body->input.touches[0],
-                                  window->body->input.touch_event_cnt);
 
     window->body->input.touch_event_cnt = 0;
 
     /* Set the gesture information, before returning to LVGL */
-    lv_indev_set_gesture_data(data, recognizer);
+    lv_indev_gesture_recognizers_set_data(drv, data);
 
 }
 

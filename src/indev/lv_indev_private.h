@@ -16,6 +16,7 @@ extern "C" {
 #include "lv_indev.h"
 #include "../misc/lv_anim.h"
 #include "lv_indev_scroll.h"
+#include "lv_indev_gesture.h"
 
 /*********************
  *      DEFINES
@@ -33,6 +34,7 @@ struct _lv_indev_t {
     lv_indev_read_cb_t read_cb;
 
     lv_indev_state_t state; /**< Current state of the input device.*/
+    lv_indev_state_t prev_state; /**< Previous state of the input device.*/
     lv_indev_mode_t mode;
 
     /*Flags*/
@@ -101,6 +103,7 @@ struct _lv_indev_t {
         uint8_t gesture_dir : 4;
         uint8_t gesture_sent : 1;
         uint8_t press_moved : 1;
+        uint8_t pressed : 1;
     } pointer;
     struct {
         /*Keypad data*/
@@ -115,8 +118,12 @@ struct _lv_indev_t {
     lv_event_list_t event_list;
     lv_anim_t * scroll_throw_anim;
 
-    lv_indev_gesture_type_t gesture_type;
-    void * gesture_data;
+#if LV_USE_GESTURE_RECOGNITION
+    lv_indev_gesture_recognizer_t recognizers[LV_INDEV_GESTURE_CNT];
+    lv_indev_gesture_type_t cur_gesture;
+    void * gesture_data[LV_INDEV_GESTURE_CNT];
+    lv_indev_gesture_type_t gesture_type[LV_INDEV_GESTURE_CNT];
+#endif
 };
 
 /**********************
@@ -130,6 +137,7 @@ struct _lv_indev_t {
  * @return          the found scrollable object or NULL if not found.
  */
 lv_obj_t * lv_indev_find_scroll_obj(lv_indev_t * indev);
+
 
 /**********************
  *      MACROS

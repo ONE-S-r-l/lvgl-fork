@@ -60,6 +60,12 @@ typedef enum {
  * GLOBAL PROTOTYPES
  **********************/
 
+/**
+ * Set it for `LV_SYSMON_GET_IDLE` to show the CPU usage
+ * @return the idle percentage since the last call
+ */
+uint32_t lv_os_get_idle_percent(void);
+
 #if LV_USE_OS != LV_OS_NONE
 
 /*----------------------------------------
@@ -70,13 +76,15 @@ typedef enum {
 /**
  * Create a new thread
  * @param thread        a variable in which the thread will be stored
+ * @param name          the name of the thread
  * @param prio          priority of the thread
  * @param callback      function of the thread
  * @param stack_size    stack size in bytes
  * @param user_data     arbitrary data, will be available in the callback
  * @return              LV_RESULT_OK: success; LV_RESULT_INVALID: failure
  */
-lv_result_t lv_thread_init(lv_thread_t * thread, lv_thread_prio_t prio, void (*callback)(void *), size_t stack_size,
+lv_result_t lv_thread_init(lv_thread_t * thread, const char * const name,
+                           lv_thread_prio_t prio, void (*callback)(void *), size_t stack_size,
                            void * user_data);
 
 /**
@@ -187,11 +195,11 @@ void lv_unlock(void);
  * optimizations and avoid the call overhead of the OS API to ensure no performance penalty.
  */
 
-static inline lv_result_t lv_thread_init(lv_thread_t * thread, lv_thread_prio_t prio, void (*callback)(void *),
-                                         size_t stack_size,
-                                         void * user_data)
+static inline lv_result_t lv_thread_init(lv_thread_t * thread, const char * const name, lv_thread_prio_t prio,
+                                         void (*callback)(void *), size_t stack_size, void * user_data)
 {
     LV_UNUSED(thread);
+    LV_UNUSED(name);
     LV_UNUSED(callback);
     LV_UNUSED(prio);
     LV_UNUSED(stack_size);

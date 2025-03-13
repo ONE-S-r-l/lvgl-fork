@@ -23,7 +23,7 @@
 /**********************
  *  STATIC PROTOTYPES
  **********************/
-static void apply_styles(lv_obj_t * obj, const char * name, const char * value);
+static void apply_styles(lv_xml_parser_state_t * state, lv_obj_t * obj, const char * name, const char * value);
 
 /**********************
  *  STATIC VARIABLES
@@ -57,7 +57,9 @@ void lv_xml_obj_apply(lv_xml_parser_state_t * state, const char ** attrs)
     for(int i = 0; attrs[i]; i += 2) {
         const char * name = attrs[i];
         const char * value = attrs[i + 1];
-
+#if LV_USE_OBJ_NAME
+        if(lv_streq("name", name)) lv_obj_set_name(item, value);
+#endif
         if(lv_streq("x", name)) lv_obj_set_x(item, lv_xml_to_size(value));
         else if(lv_streq("y", name)) lv_obj_set_y(item, lv_xml_to_size(value));
         else if(lv_streq("width", name)) lv_obj_set_width(item, lv_xml_to_size(value));
@@ -108,7 +110,7 @@ void lv_xml_obj_apply(lv_xml_parser_state_t * state, const char ** attrs)
         else if(lv_streq("styles", name)) lv_xml_style_add_to_obj(state, item, value);
 
         else if(lv_strlen(name) > 6 && lv_memcmp("style_", name, 6) == 0) {
-            apply_styles(item, name, value);
+            apply_styles(state, item, name, value);
         }
     }
 }
@@ -117,7 +119,7 @@ void lv_xml_obj_apply(lv_xml_parser_state_t * state, const char ** attrs)
  *   STATIC FUNCTIONS
  **********************/
 
-static void apply_styles(lv_obj_t * obj, const char * name, const char * value)
+static void apply_styles(lv_xml_parser_state_t * state, lv_obj_t * obj, const char * name, const char * value)
 {
     char name_local[512];
     lv_strlcpy(name_local, name, sizeof(name_local));
@@ -159,6 +161,7 @@ static void apply_styles(lv_obj_t * obj, const char * name, const char * value)
     else SET_STYLE_IF(bg_grad_color, lv_xml_to_color(value));
     else SET_STYLE_IF(bg_main_stop, lv_xml_atoi(value));
     else SET_STYLE_IF(bg_grad_stop, lv_xml_atoi(value));
+    else SET_STYLE_IF(bg_grad, lv_xml_component_get_grad(&state->ctx, value));
 
     else SET_STYLE_IF(bg_image_src, lv_xml_get_image(value));
     else SET_STYLE_IF(bg_image_tiled, lv_xml_to_bool(value));

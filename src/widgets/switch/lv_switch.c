@@ -62,7 +62,7 @@ const lv_obj_class_t lv_switch_class = {
     .group_def = LV_OBJ_CLASS_GROUP_DEF_TRUE,
     .instance_size = sizeof(lv_switch_t),
     .base_class = &lv_obj_class,
-    .name = "switch",
+    .name = "lv_switch",
 };
 
 /**********************
@@ -186,6 +186,7 @@ static void draw_main(lv_event_t * e)
 
     lv_draw_rect_dsc_t draw_indic_dsc;
     lv_draw_rect_dsc_init(&draw_indic_dsc);
+    draw_indic_dsc.base.layer = layer;
     lv_obj_init_draw_rect_dsc(obj, LV_PART_INDICATOR, &draw_indic_dsc);
     lv_draw_rect(layer, &draw_indic_dsc, &indic_area);
 
@@ -265,6 +266,7 @@ static void draw_main(lv_event_t * e)
 
     lv_draw_rect_dsc_t knob_rect_dsc;
     lv_draw_rect_dsc_init(&knob_rect_dsc);
+    knob_rect_dsc.base.layer = layer;
     lv_obj_init_draw_rect_dsc(obj, LV_PART_KNOB, &knob_rect_dsc);
 
     lv_draw_rect(layer, &knob_rect_dsc, &knob_area);
