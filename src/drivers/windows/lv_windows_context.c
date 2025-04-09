@@ -270,6 +270,8 @@ static void lv_windows_display_timer_callback(lv_timer_t * timer)
                 NULL,
                 (uint32_t)context->display_framebuffer_size,
                 LV_DISPLAY_RENDER_MODE_DIRECT);
+
+            lv_display_send_event(context->display_device_object, LV_EVENT_REFR_REQUEST, NULL);
         }
     }
 
