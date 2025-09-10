@@ -661,8 +661,9 @@ static void get_sel_area(lv_obj_t * obj, lv_area_t * sel_area)
     lv_area_t roller_coords;
     lv_obj_get_coords(obj, &roller_coords);
 
-    sel_area->x1 = roller_coords.x1;
-    sel_area->x2 = roller_coords.x2;
+    int32_t border_width = lv_obj_get_style_border_width(obj, LV_PART_MAIN);
+    sel_area->x1 = roller_coords.x1 + border_width;
+    sel_area->x2 = roller_coords.x2 - border_width;
 
 }
 
