@@ -92,7 +92,7 @@ static lv_timer_t * event_handler_timer;
  *   GLOBAL FUNCTIONS
  **********************/
 
-lv_display_t * lv_sdl_window_create(int32_t hor_res, int32_t ver_res)
+lv_display_t * lv_sdl_window_create(int32_t hor_res, int32_t ver_res, lv_color_format_t color_format)
 {
     if(!inited) {
         SDL_Init(SDL_INIT_VIDEO);
@@ -113,6 +113,7 @@ lv_display_t * lv_sdl_window_create(int32_t hor_res, int32_t ver_res)
         lv_free(dsc);
         return NULL;
     }
+    lv_display_set_color_format(disp, color_format);
     lv_display_add_event_cb(disp, release_disp_cb, LV_EVENT_DELETE, disp);
     lv_display_set_driver_data(disp, dsc);
     window_create(disp);
@@ -444,16 +445,18 @@ static void texture_resize(lv_display_t * disp)
     }
     if(dsc->texture) SDL_DestroyTexture(dsc->texture);
 
-#if LV_COLOR_DEPTH == 32 || LV_COLOR_DEPTH == 1
-    SDL_PixelFormatEnum px_format =
-        SDL_PIXELFORMAT_RGB888; /*same as SDL_PIXELFORMAT_RGB888, but it's not supported in older versions*/
-#elif LV_COLOR_DEPTH == 24
-    SDL_PixelFormatEnum px_format = SDL_PIXELFORMAT_BGR24;
-#elif LV_COLOR_DEPTH == 16
-    SDL_PixelFormatEnum px_format = SDL_PIXELFORMAT_RGB565;
-#else
-#error("Unsupported color format")
-#endif
+    SDL_PixelFormatEnum px_format;
+    switch (cf) {
+        case LV_COLOR_FORMAT_RGB565:
+            px_format = SDL_PIXELFORMAT_RGB565;
+            break;
+        case LV_COLOR_FORMAT_RGB888:
+            px_format = SDL_PIXELFORMAT_BGR24;
+            break;
+        default:
+            px_format = SDL_PIXELFORMAT_RGB888; /*same as SDL_PIXELFORMAT_RGB888, but it's not supported in older versions*/
+            break;
+    }
 
     dsc->texture = SDL_CreateTexture(dsc->renderer, px_format,
                                      SDL_TEXTUREACCESS_STATIC, disp->hor_res, disp->ver_res);
