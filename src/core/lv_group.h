@@ -37,6 +37,12 @@ typedef enum {
     LV_KEY_END       = 3,   /*0x03, ETX*/
 } lv_key_t;
 
+typedef enum {
+    LV_KEY_MOD_NONE   = 0x0000,
+    LV_KEY_MOD_LSHIFT = 0x0001,
+    LV_KEY_MOD_RSHIFT = 0x0002,
+} lv_modifier_key_t;
+
 /**********************
  *      TYPEDEFS
  **********************/
@@ -131,11 +137,12 @@ void lv_group_focus_freeze(lv_group_t * group, bool en);
 
 /**
  * Send a control character to Widget that has focus in a group.
- * @param group     pointer to a group
- * @param c         a character (use LV_KEY_.. to navigate)
- * @return          result of Widget with focus in group.
+ * @param group             pointer to a group
+ * @param c                 a character (use LV_KEY_.. to navigate)
+ * @param modifier_keys     the modifier keys
+ * @return                  result of Widget with focus in group.
  */
-lv_result_t lv_group_send_data(lv_group_t * group, uint32_t c);
+lv_result_t lv_group_send_data(lv_group_t * group, uint32_t c, uint16_t modifier_keys);
 
 /**
  * Set a function for a group which will be called when a new Widget has focus.

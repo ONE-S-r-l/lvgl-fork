@@ -30,6 +30,7 @@ typedef struct {
  **********************/
 static void sdl_keyboard_read(lv_indev_t * indev, lv_indev_data_t * data);
 static uint32_t keycode_to_ctrl_key(SDL_Keycode sdl_key);
+static uint16_t sdl_keymods_to_modifier_keys(SDL_Keymod sdl_keymods);
 static void release_indev_cb(lv_event_t * e);
 
 /**********************
@@ -82,6 +83,7 @@ static void sdl_keyboard_read(lv_indev_t * indev, lv_indev_data_t * data)
         dev->dummy_read = true;
         data->state = LV_INDEV_STATE_PRESSED;
         data->key = dev->buf[0];
+        data->modifier_keys = sdl_keymods_to_modifier_keys(SDL_GetModState());
         lv_memmove(dev->buf, dev->buf + 1, len);
     }
 }
@@ -213,6 +215,20 @@ static uint32_t keycode_to_ctrl_key(SDL_Keycode sdl_key)
         default:
             return '\0';
     }
+}
+
+static uint16_t sdl_keymods_to_modifier_keys(SDL_Keymod sdl_keymods)
+{
+    uint16_t modifier_keys = LV_KEY_MOD_NONE;
+
+    if(sdl_keymods & KMOD_LSHIFT) {
+        modifier_keys |= LV_KEY_MOD_LSHIFT;
+    }
+    if(sdl_keymods & KMOD_RSHIFT) {
+        modifier_keys |= LV_KEY_MOD_RSHIFT;
+    }
+
+    return modifier_keys;
 }
 
 #endif /*LV_USE_SDL*/
