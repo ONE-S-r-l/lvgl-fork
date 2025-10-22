@@ -41,7 +41,7 @@ struct SDL_Window;
  * GLOBAL PROTOTYPES
  **********************/
 
-lv_display_t * lv_sdl_window_create(int32_t hor_res, int32_t ver_res);
+lv_display_t * lv_sdl_window_create(int32_t hor_res, int32_t ver_res, lv_color_format_t color_format);
 
 void lv_sdl_window_set_resizeable(lv_display_t * disp, bool value);
 

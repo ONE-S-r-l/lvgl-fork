@@ -130,12 +130,6 @@ void lv_group_add_obj(lv_group_t * group, lv_obj_t * obj)
     if(next == NULL) return;
     *next = obj;
 
-    /*If the head and the tail is equal then there is only one object in the linked list.
-     *In this case automatically activate it*/
-    if(lv_ll_get_head(&group->obj_ll) == next) {
-        lv_group_refocus(group);
-    }
-
     LV_LOG_TRACE("finished");
 }
 
@@ -166,24 +160,10 @@ void lv_group_remove_obj(lv_obj_t * obj)
 
     LV_LOG_TRACE("begin");
 
-    /*Focus on the next object*/
+    /*Defocus the object*/
     if(g->obj_focus && *g->obj_focus == obj) {
         if(g->frozen) g->frozen = 0;
-
-        /*If this is the only object in the group then focus to nothing.*/
-        if(lv_ll_get_head(&g->obj_ll) == g->obj_focus && lv_ll_get_tail(&g->obj_ll) == g->obj_focus) {
-            lv_obj_send_event(*g->obj_focus, LV_EVENT_DEFOCUSED, get_indev(g));
-        }
-        /*If there more objects in the group then focus to the next/prev object*/
-        else {
-            lv_group_refocus(g);
-        }
-    }
-
-    /*If the focuses object is still the same then it was the only object in the group but it will
-     *be deleted. Set the `obj_focus` to NULL to get back to the initial state of the group with
-     *zero objects*/
-    if(g->obj_focus && *g->obj_focus == obj) {
+        lv_obj_send_event(*g->obj_focus, LV_EVENT_DEFOCUSED, get_indev(g));
         g->obj_focus = NULL;
     }
 
@@ -283,7 +263,7 @@ void lv_group_focus_freeze(lv_group_t * group, bool en)
     else group->frozen = 1;
 }
 
-lv_result_t lv_group_send_data(lv_group_t * group, uint32_t c)
+lv_result_t lv_group_send_data(lv_group_t * group, uint32_t c, uint16_t modifier_keys)
 {
     LV_ASSERT_NULL(group);
 
@@ -292,7 +272,8 @@ lv_result_t lv_group_send_data(lv_group_t * group, uint32_t c)
 
     if(lv_obj_has_state(act, LV_STATE_DISABLED)) return LV_RESULT_OK;
 
-    return lv_obj_send_event(act, LV_EVENT_KEY, &c);
+    uint32_t data[2] = {c, modifier_keys};
+    return lv_obj_send_event(act, LV_EVENT_KEY, data);
 }
 
 void lv_group_set_focus_cb(lv_group_t * group, lv_group_focus_cb_t focus_cb)

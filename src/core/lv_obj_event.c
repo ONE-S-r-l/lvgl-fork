@@ -247,8 +247,21 @@ const lv_area_t * lv_event_get_old_size(lv_event_t * e)
 uint32_t lv_event_get_key(lv_event_t * e)
 {
     if(e->code == LV_EVENT_KEY) {
-        uint32_t * k = lv_event_get_param(e);
-        if(k) return *k;
+        uint32_t * data = lv_event_get_param(e);
+        if(data) return data[0];
+        else return 0;
+    }
+    else {
+        LV_LOG_WARN("Not interpreted with this event code");
+        return 0;
+    }
+}
+
+uint32_t lv_event_get_modifier_keys(lv_event_t * e)
+{
+    if(e->code == LV_EVENT_KEY) {
+        uint32_t * data = lv_event_get_param(e);
+        if(data) return data[1];
         else return 0;
     }
     else {

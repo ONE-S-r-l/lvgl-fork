@@ -1018,7 +1018,10 @@ static void draw_main(lv_event_t * e)
         label_dsc.text_local = true;
     }
 
+    const lv_area_t clip_area_ori = layer->_clip_area;
+    layer->_clip_area = txt_area;
     lv_draw_label(layer, &label_dsc, &txt_area);
+    layer->_clip_area = clip_area_ori;
 }
 
 static void draw_list(lv_event_t * e)
@@ -1074,6 +1077,7 @@ static void draw_box(lv_obj_t * dropdown_obj, lv_layer_t * layer, uint32_t id, l
     const lv_font_t * font    = lv_obj_get_style_text_font(list_obj, LV_PART_SELECTED);
     int32_t line_space = lv_obj_get_style_text_line_space(list_obj,  LV_PART_SELECTED);
     int32_t font_h         = lv_font_get_line_height(font);
+    int32_t border_width = lv_obj_get_style_border_width(list_obj, LV_PART_MAIN);
 
     /*Draw the selected*/
     lv_obj_t * label = get_label(dropdown_obj);
@@ -1084,8 +1088,8 @@ static void draw_box(lv_obj_t * dropdown_obj, lv_layer_t * layer, uint32_t id, l
     rect_area.y1 -= line_space / 2;
 
     rect_area.y2 = rect_area.y1 + font_h + line_space - 1;
-    rect_area.x1 = dropdown->list->coords.x1;
-    rect_area.x2 = dropdown->list->coords.x2;
+    rect_area.x1 = list_obj->coords.x1 + border_width;
+    rect_area.x2 = list_obj->coords.x2 - border_width;
 
     lv_draw_rect_dsc_t sel_rect;
     lv_draw_rect_dsc_init(&sel_rect);

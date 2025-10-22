@@ -7,6 +7,7 @@
  *      INCLUDES
  *********************/
 #include "lv_spinbox_private.h"
+#include "../../core/lv_obj_event_private.h"
 #include "../../core/lv_obj_class_private.h"
 #if LV_USE_SPINBOX
 
@@ -442,7 +443,7 @@ static void lv_spinbox_event(const lv_obj_class_t * class_p, lv_event_t * e)
     else if(code == LV_EVENT_KEY) {
         lv_indev_type_t indev_type = lv_indev_get_type(lv_indev_active());
 
-        uint32_t c = *((uint32_t *)lv_event_get_param(e)); /*uint32_t because can be UTF-8*/
+        uint32_t c = lv_event_get_key(e);
         if(c == LV_KEY_RIGHT) {
             if(indev_type == LV_INDEV_TYPE_ENCODER)
                 lv_spinbox_increment(obj);

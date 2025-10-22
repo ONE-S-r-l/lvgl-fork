@@ -8,6 +8,7 @@
  *********************/
 #include "lv_textarea_private.h"
 #include "../label/lv_label_private.h"
+#include "../../core/lv_obj_event_private.h"
 #include "../../core/lv_obj_class_private.h"
 #if LV_USE_TEXTAREA != 0
 
@@ -64,6 +65,7 @@ static void auto_hide_characters(lv_obj_t * obj);
 static void auto_hide_characters_cancel(lv_obj_t * obj);
 static inline bool is_valid_but_non_printable_char(const uint32_t letter);
 static void lv_textarea_scroll_to_cusor_pos(lv_obj_t * obj, int32_t pos);
+static inline bool is_shift_pressed(uint32_t modifier_keys);
 
 /**********************
  *  STATIC VARIABLES
@@ -966,7 +968,9 @@ static void lv_textarea_event(const lv_obj_class_t * class_p, lv_event_t * e)
         start_cursor_blink(obj);
     }
     else if(code == LV_EVENT_KEY) {
-        uint32_t c = *((uint32_t *)lv_event_get_param(e)); /*uint32_t because can be UTF-8*/
+        uint32_t c = lv_event_get_key(e);
+        uint32_t modifier_keys = lv_event_get_modifier_keys(e);
+
         if(c == LV_KEY_RIGHT)
             lv_textarea_cursor_right(obj);
         else if(c == LV_KEY_LEFT)
@@ -983,7 +987,7 @@ static void lv_textarea_event(const lv_obj_class_t * class_p, lv_event_t * e)
             lv_textarea_set_cursor_pos(obj, 0);
         else if(c == LV_KEY_END)
             lv_textarea_set_cursor_pos(obj, LV_TEXTAREA_CURSOR_LAST);
-        else if(c == LV_KEY_ENTER && lv_textarea_get_one_line(obj))
+        else if(c == LV_KEY_ENTER && (lv_textarea_get_one_line(obj) || !is_shift_pressed(modifier_keys)))
             lv_obj_send_event(obj, LV_EVENT_READY, NULL);
         else {
             lv_textarea_add_char(obj, c);
@@ -1169,11 +1173,12 @@ static void refr_cursor_area(lv_obj_t * obj)
     lv_point_t letter_pos;
     lv_label_get_letter_pos(ta->label, cur_pos, &letter_pos);
 
+    int32_t label_width = lv_obj_get_style_width(ta->label, LV_PART_MAIN);
     lv_text_align_t align = lv_obj_calculate_style_text_align(ta->label, LV_PART_MAIN, lv_label_get_text(ta->label));
 
     /*If the cursor is out of the text (most right) draw it to the next line*/
     if(((letter_pos.x + ta->label->coords.x1) + letter_w > ta->label->coords.x2) &&
-       (ta->one_line == 0 && align != LV_TEXT_ALIGN_RIGHT)) {
+       (label_width != LV_SIZE_CONTENT && align != LV_TEXT_ALIGN_RIGHT)) {
 
         letter_pos.x = 0;
         letter_pos.y += letter_h + line_space;
@@ -1519,6 +1524,11 @@ static void lv_textarea_scroll_to_cusor_pos(lv_obj_t * obj, int32_t pos)
     start_cursor_blink(obj);
 
     refr_cursor_area(obj);
+}
+
+static inline bool is_shift_pressed(uint32_t modifier_keys)
+{
+    return modifier_keys & (LV_KEY_MOD_LSHIFT | LV_KEY_MOD_RSHIFT);
 }
 
 #endif
