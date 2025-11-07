@@ -330,7 +330,7 @@ void lv_group_set_editing(lv_group_t * group, bool edit)
 void lv_group_set_refocus_policy(lv_group_t * group, lv_group_refocus_policy_t policy)
 {
     LV_ASSERT_NULL(group);
-    group->refocus_policy = policy & 0x01;
+    group->refocus_policy = policy & 0x03;
 }
 
 void lv_group_set_wrap(lv_group_t * group, bool en)
