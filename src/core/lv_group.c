@@ -130,6 +130,12 @@ void lv_group_add_obj(lv_group_t * group, lv_obj_t * obj)
     if(next == NULL) return;
     *next = obj;
 
+    /*If the head and the tail is equal then there is only one object in the linked list.
+     *In this case automatically activate it*/
+    if(lv_ll_get_head(&group->obj_ll) == next) {
+        lv_group_refocus(group);
+    }
+
     LV_LOG_TRACE("finished");
 }
 
@@ -160,10 +166,24 @@ void lv_group_remove_obj(lv_obj_t * obj)
 
     LV_LOG_TRACE("begin");
 
-    /*Defocus the object*/
+    /*Focus on the next object*/
     if(g->obj_focus && *g->obj_focus == obj) {
         if(g->frozen) g->frozen = 0;
-        lv_obj_send_event(*g->obj_focus, LV_EVENT_DEFOCUSED, get_indev(g));
+
+        /*If this is the only object in the group then focus to nothing.*/
+        if(lv_ll_get_head(&g->obj_ll) == g->obj_focus && lv_ll_get_tail(&g->obj_ll) == g->obj_focus) {
+            lv_obj_send_event(*g->obj_focus, LV_EVENT_DEFOCUSED, get_indev(g));
+        }
+        /*If there more objects in the group then focus to the next/prev object*/
+        else {
+            lv_group_refocus(g);
+        }
+    }
+
+    /*If the focuses object is still the same then it was the only object in the group but it will
+     *be deleted. Set the `obj_focus` to NULL to get back to the initial state of the group with
+     *zero objects*/
+    if(g->obj_focus && *g->obj_focus == obj) {
         g->obj_focus = NULL;
     }
 
@@ -311,7 +331,7 @@ void lv_group_set_editing(lv_group_t * group, bool edit)
 void lv_group_set_refocus_policy(lv_group_t * group, lv_group_refocus_policy_t policy)
 {
     LV_ASSERT_NULL(group);
-    group->refocus_policy = policy & 0x01;
+    group->refocus_policy = policy & 0x03;
 }
 
 void lv_group_set_wrap(lv_group_t * group, bool en)

@@ -52,7 +52,8 @@ typedef void (*lv_group_edge_cb_t)(lv_group_t *, bool);
 
 typedef enum {
     LV_GROUP_REFOCUS_POLICY_NEXT = 0,
-    LV_GROUP_REFOCUS_POLICY_PREV = 1
+    LV_GROUP_REFOCUS_POLICY_PREV = 1,
+    LV_GROUP_REFOCUS_POLICY_NONE = 2
 } lv_group_refocus_policy_t;
 
 /**********************
