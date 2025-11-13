@@ -47,7 +47,7 @@ typedef void (*lv_group_edge_cb_t)(lv_group_t *, bool);
 typedef enum {
     LV_GROUP_REFOCUS_POLICY_NEXT = 0,
     LV_GROUP_REFOCUS_POLICY_PREV = 1,
-    LV_GROUP_REFOCUS_POLICY_NONE = 2
+    LV_GROUP_REFOCUS_POLICY_RESET = 2
 } lv_group_refocus_policy_t;
 
 /**********************
@@ -122,6 +122,12 @@ void lv_group_focus_next(lv_group_t * group);
  * @param group     pointer to a group
  */
 void lv_group_focus_prev(lv_group_t * group);
+
+/**
+ * Move focus according to the refocus policy.
+ * @param group     pointer to a group
+ */
+void lv_group_refocus(lv_group_t * group);
 
 /**
  * Do not allow changing focus from current Widget.

@@ -27,7 +27,6 @@
  **********************/
 static bool focus_next_core(lv_group_t * group, void * (*begin)(const lv_ll_t *),
                             void * (*move)(const lv_ll_t *, const void *));
-static void lv_group_refocus(lv_group_t * g);
 static lv_indev_t * get_indev(const lv_group_t * g);
 
 /**********************
@@ -275,6 +274,29 @@ void lv_group_focus_prev(lv_group_t * group)
     }
 }
 
+void lv_group_refocus(lv_group_t * g)
+{
+    /*Refocus must temporarily allow wrapping to work correctly*/
+    uint8_t temp_wrap = g->wrap;
+    g->wrap           = 1;
+
+    if(g->refocus_policy == LV_GROUP_REFOCUS_POLICY_NEXT)
+        lv_group_focus_next(g);
+    else if(g->refocus_policy == LV_GROUP_REFOCUS_POLICY_PREV)
+        lv_group_focus_prev(g);
+    else if(g->refocus_policy == LV_GROUP_REFOCUS_POLICY_RESET) {
+        if (g->obj_focus) {
+            lv_result_t res = lv_obj_send_event(*g->obj_focus, LV_EVENT_DEFOCUSED, get_indev(g));
+            if(res != LV_RESULT_OK) return;
+            lv_obj_invalidate(*g->obj_focus);
+            g->obj_focus = NULL;
+        }
+    }
+
+    /*Restore wrap property*/
+    g->wrap = temp_wrap;
+}
+
 void lv_group_focus_freeze(lv_group_t * group, bool en)
 {
     LV_ASSERT_NULL(group);
@@ -413,20 +435,6 @@ lv_group_t  * lv_group_by_index(uint32_t index)
 /**********************
  *   STATIC FUNCTIONS
  **********************/
-
-static void lv_group_refocus(lv_group_t * g)
-{
-    /*Refocus must temporarily allow wrapping to work correctly*/
-    uint8_t temp_wrap = g->wrap;
-    g->wrap           = 1;
-
-    if(g->refocus_policy == LV_GROUP_REFOCUS_POLICY_NEXT)
-        lv_group_focus_next(g);
-    else if(g->refocus_policy == LV_GROUP_REFOCUS_POLICY_PREV)
-        lv_group_focus_prev(g);
-    /*Restore wrap property*/
-    g->wrap = temp_wrap;
-}
 
 static bool focus_next_core(lv_group_t * group, void * (*begin)(const lv_ll_t *),
                             void * (*move)(const lv_ll_t *, const void *))
