@@ -1018,10 +1018,13 @@ static void draw_main(lv_event_t * e)
         label_dsc.text_local = true;
     }
 
-    const lv_area_t clip_area_ori = layer->_clip_area;
-    layer->_clip_area = txt_area;
-    lv_draw_label(layer, &label_dsc, &txt_area);
-    layer->_clip_area = clip_area_ori;
+    lv_area_t clip_area;
+    if (lv_area_intersect(&clip_area, &layer->_clip_area, &txt_area)) {
+        const lv_area_t clip_area_ori = layer->_clip_area;
+        layer->_clip_area = clip_area;
+        lv_draw_label(layer, &label_dsc, &txt_area);
+        layer->_clip_area = clip_area_ori;
+    }
 }
 
 static void draw_list(lv_event_t * e)
