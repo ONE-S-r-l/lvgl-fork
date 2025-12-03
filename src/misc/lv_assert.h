@@ -37,7 +37,7 @@ extern "C" {
 #define LV_ASSERT(expr)                                        \
     do {                                                       \
         if(!(expr)) {                                          \
-            LV_LOG_ERROR("Asserted at expression: %s", #expr); \
+            LV_LOG_FATAL("Asserted at expression: %s", #expr); \
             LV_ASSERT_HANDLER                                  \
         }                                                      \
     } while(0)
@@ -45,7 +45,7 @@ extern "C" {
 #define LV_ASSERT_MSG(expr, msg)                                         \
     do {                                                                 \
         if(!(expr)) {                                                    \
-            LV_LOG_ERROR("Asserted at expression: %s (%s)", #expr, msg); \
+            LV_LOG_FATAL("Asserted at expression: %s (%s)", #expr, msg); \
             LV_ASSERT_HANDLER                                            \
         }                                                                \
     } while(0)
@@ -53,7 +53,7 @@ extern "C" {
 #define LV_ASSERT_FORMAT_MSG(expr, format, ...)                                         \
     do {                                                                                \
         if(!(expr)) {                                                                   \
-            LV_LOG_ERROR("Asserted at expression: %s " format , #expr, __VA_ARGS__);    \
+            LV_LOG_FATAL("Asserted at expression: %s " format , #expr, __VA_ARGS__);    \
             LV_ASSERT_HANDLER                                                           \
         }                                                                               \
     } while(0)
