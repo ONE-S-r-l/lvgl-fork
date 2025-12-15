@@ -368,6 +368,14 @@ int32_t lv_arc_get_knob_offset(const lv_obj_t * obj)
     return ((lv_arc_t *)obj)->knob_offset;
 }
 
+bool lv_arc_is_dragged(const lv_obj_t * obj)
+{
+    LV_ASSERT_OBJ(obj, MY_CLASS);
+    lv_arc_t * arc = (lv_arc_t *)obj;
+
+    return arc->dragging;
+}
+
 /*=====================
  * Other functions
  *====================*/
