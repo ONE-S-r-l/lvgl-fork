@@ -857,16 +857,15 @@ static void inv_knob_area(lv_obj_t * obj)
 
 static void get_center(const lv_obj_t * obj, lv_point_t * center, int32_t * arc_r)
 {
-    int32_t left_bg = lv_obj_get_style_pad_left(obj, LV_PART_MAIN);
-    int32_t right_bg = lv_obj_get_style_pad_right(obj, LV_PART_MAIN);
-    int32_t top_bg = lv_obj_get_style_pad_top(obj, LV_PART_MAIN);
-    int32_t bottom_bg = lv_obj_get_style_pad_bottom(obj, LV_PART_MAIN);
+    int32_t left_space = lv_obj_get_style_space_left(obj, LV_PART_MAIN);
+    int32_t top_space = lv_obj_get_style_space_top(obj, LV_PART_MAIN);
 
-    int32_t r = (LV_MIN(lv_obj_get_width(obj) - left_bg - right_bg,
-                        lv_obj_get_height(obj) - top_bg - bottom_bg)) / 2;
+    int32_t w = lv_obj_get_content_width(obj);
+    int32_t h = lv_obj_get_content_height(obj);
+    int32_t r = LV_MIN(w, h) / 2;
 
-    center->x = obj->coords.x1 + r + left_bg;
-    center->y = obj->coords.y1 + r + top_bg;
+    center->x = obj->coords.x1 + left_space + w / 2;
+    center->y = obj->coords.y1 + top_space + h / 2;
 
     if(arc_r) *arc_r = r;
 }
