@@ -160,12 +160,11 @@ void lv_draw_nema_gfx_fill(lv_draw_task_t * t, const lv_draw_fill_dsc_t * dsc, c
         nema_interpolate_rect_colors(rel_coords.x1, rel_coords.y1, coords_bg_w, coords_bg_h, &col0, &col1, &col2);
 
         /*Draw the gradient-filled rectangle*/
-        /*Note: nema_fill_rounded_rect_aa may not support gradient interpolation, use nema_fill_rect*/
-        if(radius > 0) {
-            nema_fill_rounded_rect(rel_coords.x1, rel_coords.y1, coords_bg_w, coords_bg_h, radius, 0xFFFFFFFF);
+        if(radius > 0.f) {
+            nema_fill_rounded_rect(rel_coords.x1, rel_coords.y1, coords_bg_w, coords_bg_h, radius, 0);
         }
         else {
-            nema_fill_rect(rel_coords.x1, rel_coords.y1, coords_bg_w, coords_bg_h, 0xFFFFFFFF);
+            nema_fill_rect(rel_coords.x1, rel_coords.y1, coords_bg_w, coords_bg_h, 0);
         }
 
         /*Disable gradient interpolation*/
