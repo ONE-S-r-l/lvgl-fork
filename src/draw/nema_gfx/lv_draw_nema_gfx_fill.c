@@ -36,6 +36,8 @@
 
 #if LV_USE_NEMA_GFX
 
+#include "nema_interpolators.h"
+
 /**********************
  *   GLOBAL FUNCTIONS
  **********************/
@@ -44,7 +46,6 @@ void lv_draw_nema_gfx_fill(lv_draw_task_t * t, const lv_draw_fill_dsc_t * dsc, c
     if(dsc->opa <= LV_OPA_MIN) return;
 
     lv_draw_nema_gfx_unit_t * draw_nema_gfx_unit = (lv_draw_nema_gfx_unit_t *)t->draw_unit;
-
     lv_layer_t * layer = t->target_layer;
     lv_area_t rel_coords;
     lv_area_copy(&rel_coords, coords);
@@ -94,9 +95,85 @@ void lv_draw_nema_gfx_fill(lv_draw_task_t * t, const lv_draw_fill_dsc_t * dsc, c
         else
             nema_fill_rect(rel_coords.x1, rel_coords.y1, coords_bg_w, coords_bg_h, bg_color);
     }
+#if !LV_USE_NEMA_VG
+    else if(dsc->grad.dir == LV_GRAD_DIR_HOR || dsc->grad.dir == LV_GRAD_DIR_VER) {
+        /*Handle simple gradients (HOR/VER) using nema_interpolate_rect_colors when NEMA VG is not available*/
+        uint32_t cnt = dsc->grad.stops_count;
+        if(cnt < 2) cnt = 2;
+
+        /*Get first and last stop colors*/
+        lv_color32_t col_start = lv_color_to_32(dsc->grad.stops[0].color,
+                                                LV_OPA_MIX2(dsc->grad.stops[0].opa, dsc->opa));
+        lv_color32_t col_end = lv_color_to_32(dsc->grad.stops[cnt - 1].color,
+                                              LV_OPA_MIX2(dsc->grad.stops[cnt - 1].opa, dsc->opa));
+
+        color_var_t col0, col1, col2;
+
+        if(dsc->grad.dir == LV_GRAD_DIR_HOR) {
+            /*Horizontal gradient: left to right*/
+            /*col0 = top-left, col1 = top-right, col2 = bottom-left*/
+            col0.r = col_start.red;
+            col0.g = col_start.green;
+            col0.b = col_start.blue;
+            col0.a = col_start.alpha;
+
+            col1.r = col_end.red;
+            col1.g = col_end.green;
+            col1.b = col_end.blue;
+            col1.a = col_end.alpha;
+
+            col2.r = col_start.red;
+            col2.g = col_start.green;
+            col2.b = col_start.blue;
+            col2.a = col_start.alpha;
+        }
+        else {
+            /*Vertical gradient: top to bottom*/
+            /*col0 = top-left, col1 = top-right, col2 = bottom-left*/
+            col0.r = col_start.red;
+            col0.g = col_start.green;
+            col0.b = col_start.blue;
+            col0.a = col_start.alpha;
+
+            col1.r = col_start.red;
+            col1.g = col_start.green;
+            col1.b = col_start.blue;
+            col1.a = col_start.alpha;
+
+            col2.r = col_end.red;
+            col2.g = col_end.green;
+            col2.b = col_end.blue;
+            col2.a = col_end.alpha;
+        }
+
+        /*Check if any color has alpha for proper blending*/
+        bool has_alpha = (col_start.alpha < 255U) || (col_end.alpha < 255U);
+        if(has_alpha) {
+            nema_set_blend_fill(NEMA_BL_SRC_OVER);
+        }
+        else {
+            nema_set_blend_fill(NEMA_BL_SRC);
+        }
+
+        /*Enable gradient interpolation and set colors*/
+        nema_enable_gradient(1);
+        nema_interpolate_rect_colors(rel_coords.x1, rel_coords.y1, coords_bg_w, coords_bg_h, &col0, &col1, &col2);
+
+        /*Draw the gradient-filled rectangle*/
+        /*Note: nema_fill_rounded_rect_aa may not support gradient interpolation, use nema_fill_rect*/
+        if(radius > 0) {
+            nema_fill_rounded_rect(rel_coords.x1, rel_coords.y1, coords_bg_w, coords_bg_h, radius, 0xFFFFFFFF);
+        }
+        else {
+            nema_fill_rect(rel_coords.x1, rel_coords.y1, coords_bg_w, coords_bg_h, 0xFFFFFFFF);
+        }
+
+        /*Disable gradient interpolation*/
+        nema_enable_gradient(0);
+    }
+#endif
 #if LV_USE_NEMA_VG
     else {
-
         nema_vg_paint_clear(draw_nema_gfx_unit->paint);
 
         nema_vg_set_blend(NEMA_BL_SRC_OVER | NEMA_BLOP_SRC_PREMULT);
