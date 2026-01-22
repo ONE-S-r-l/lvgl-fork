@@ -441,7 +441,7 @@ static void lv_glfw_window_quit(void)
     glfwTerminate();
     glfw_inited = false;
 
-    lv_deinit();
+    lv_deinit(0);
 
     exit(0);
 }

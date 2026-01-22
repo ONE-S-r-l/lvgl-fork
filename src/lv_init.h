@@ -32,12 +32,12 @@ extern "C" {
  * Initialize LVGL library.
  * Should be called before any other LVGL related function.
  */
-void lv_init(void);
+void lv_init(int is_g2d_available);
 
 /**
  * Deinit the 'lv' library
  */
-void lv_deinit(void);
+void lv_deinit(int is_g2d_available);
 
 /**
  * Returns whether the 'lv' library is currently initialized

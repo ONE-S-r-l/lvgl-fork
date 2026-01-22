@@ -175,7 +175,7 @@ bool lv_is_initialized(void)
 #endif
 }
 
-void lv_init(void)
+void lv_init(int is_g2d_available)
 {
     /*First initialize Garbage Collection if needed*/
 #ifdef LV_GC_INIT
@@ -248,7 +248,9 @@ void lv_init(void)
 
 #if LV_USE_G2D
 #if LV_USE_DRAW_G2D || LV_USE_ROTATE_G2D
+if (is_g2d_available) {
     lv_draw_g2d_init();
+}
 #endif
 #endif
 
@@ -419,7 +421,7 @@ void lv_init(void)
     LV_LOG_TRACE("finished");
 }
 
-void lv_deinit(void)
+void lv_deinit(int is_g2d_available)
 {
     /*Do nothing if already deinit*/
     if(!lv_initialized) {
@@ -481,7 +483,9 @@ void lv_deinit(void)
 
 #if LV_USE_G2D
 #if LV_USE_DRAW_G2D || LV_USE_ROTATE_G2D
+if (is_g2d_available) {
     lv_draw_g2d_deinit();
+}
 #endif
 #endif
 

@@ -4,7 +4,7 @@
 
 int main(void)
 {
-    lv_init();
+    lv_init(0);
     return 0;
 }
 #endif
