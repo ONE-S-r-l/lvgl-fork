@@ -80,6 +80,7 @@ static void color_anim(lv_obj_t * obj);
 static void arc_anim(lv_obj_t * obj);
 
 static lv_obj_t * card_create(void);
+static void set_background_gradient(lv_obj_t * obj);
 
 static void empty_screen_cb(void)
 {
@@ -864,13 +865,6 @@ static lv_obj_t * card_create(void)
     lv_obj_set_style_pad_all(panel, 8, 0);
     lv_obj_set_style_radius(panel, 0, LV_PART_MAIN);
 
-    lv_palette_t palette = LV_PALETTE_LIME;
-    lv_obj_set_style_bg_grad_dir(panel, LV_GRAD_DIR_VER, LV_PART_MAIN);
-    lv_obj_set_style_bg_color(panel, lv_palette_main(palette), LV_PART_MAIN);  // Initial color
-    lv_obj_set_style_bg_main_opa(panel, LV_OPA_COVER, LV_PART_MAIN);
-    lv_obj_set_style_bg_grad_color(panel, lv_palette_darken(palette, 2), LV_PART_MAIN);  // Final color
-    lv_obj_set_style_bg_grad_opa(panel, LV_OPA_COVER, LV_PART_MAIN);
-
     LV_IMAGE_DECLARE(img_benchmark_avatar);
     lv_obj_t * child = lv_image_create(panel);
     lv_obj_align(child, LV_ALIGN_LEFT_MID, 0, 0);
@@ -905,6 +899,16 @@ static lv_obj_t * card_create(void)
     lv_label_set_text_static(child, "Connect");
 
     return panel;
+}
+
+static void set_background_gradient(lv_obj_t * obj)
+{
+    lv_palette_t palette = LV_PALETTE_LIME;
+    lv_obj_set_style_bg_grad_dir(obj, LV_GRAD_DIR_VER, LV_PART_MAIN);
+    lv_obj_set_style_bg_color(obj, lv_palette_main(palette), LV_PART_MAIN);  // Initial color
+    lv_obj_set_style_bg_main_opa(obj, LV_OPA_COVER, LV_PART_MAIN);
+    lv_obj_set_style_bg_grad_color(obj, lv_palette_darken(palette, 2), LV_PART_MAIN);  // Final color
+    lv_obj_set_style_bg_grad_opa(obj, LV_OPA_COVER, LV_PART_MAIN);
 }
 
 static void rnd_reset(void)
