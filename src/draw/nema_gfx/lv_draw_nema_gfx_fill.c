@@ -46,6 +46,7 @@ void lv_draw_nema_gfx_fill(lv_draw_task_t * t, const lv_draw_fill_dsc_t * dsc, c
     if(dsc->opa <= LV_OPA_MIN) return;
 
     lv_draw_nema_gfx_unit_t * draw_nema_gfx_unit = (lv_draw_nema_gfx_unit_t *)t->draw_unit;
+
     lv_layer_t * layer = t->target_layer;
     lv_area_t rel_coords;
     lv_area_copy(&rel_coords, coords);
@@ -97,6 +98,7 @@ void lv_draw_nema_gfx_fill(lv_draw_task_t * t, const lv_draw_fill_dsc_t * dsc, c
     }
 #if LV_USE_NEMA_VG
     else {
+
         nema_vg_paint_clear(draw_nema_gfx_unit->paint);
 
         nema_vg_set_blend(NEMA_BL_SRC_OVER | NEMA_BLOP_SRC_PREMULT);
