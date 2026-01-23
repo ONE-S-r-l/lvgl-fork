@@ -441,7 +441,8 @@ static void lv_glfw_window_quit(void)
     glfwTerminate();
     glfw_inited = false;
 
-    lv_deinit();
+    struct lv_init_config config = { .init_g2d = false };
+    lv_deinit(&config);
 
     exit(0);
 }

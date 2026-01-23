@@ -375,7 +375,8 @@ static void sdl_event_handler(lv_timer_t * t)
         }
         if(event.type == SDL_QUIT) {
             SDL_Quit();
-            lv_deinit();
+            struct lv_init_config config = { .init_g2d = false };
+            lv_deinit(&config);
             inited = false;
 #if LV_SDL_DIRECT_EXIT
             exit(0);
