@@ -149,7 +149,7 @@ void lv_draw_nema_gfx_fill(lv_draw_task_t * t, const lv_draw_fill_dsc_t * dsc, c
         /*Check if any color has alpha for proper blending*/
         bool has_alpha = (col_start.alpha < 255U) || (col_end.alpha < 255U);
         if(has_alpha) {
-            nema_set_blend_fill(NEMA_BL_SRC_OVER);
+            nema_set_blend_fill(NEMA_BL_SRC_OVER | NEMA_BLOP_SRC_PREMULT);
         }
         else {
             nema_set_blend_fill(NEMA_BL_SRC);
