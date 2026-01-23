@@ -175,7 +175,7 @@ void lv_draw_nema_gfx_fill(lv_draw_task_t * t, const lv_draw_fill_dsc_t * dsc, c
             nema_vg_draw_rect(rel_coords.x1, rel_coords.y1, coords_bg_w, coords_bg_h, NULL, draw_nema_gfx_unit->paint);
     }
 #else // !LV_USE_NEMA_VG
-    else if(dsc->grad.dir == LV_GRAD_DIR_HOR || dsc->grad.dir == LV_GRAD_DIR_VER) {
+    else if((dsc->grad.dir == LV_GRAD_DIR_HOR || dsc->grad.dir == LV_GRAD_DIR_VER) && radius == 0) {
         /*Handle simple gradients (HOR/VER) using nema_interpolate_rect_colors when NEMA VG is not available*/
         uint32_t cnt = dsc->grad.stops_count;
         if (cnt < 2)  {

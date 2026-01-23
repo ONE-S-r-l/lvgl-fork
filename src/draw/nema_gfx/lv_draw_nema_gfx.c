@@ -166,13 +166,15 @@ static int32_t nema_gfx_evaluate(lv_draw_unit_t * draw_unit, lv_draw_task_t * ta
 #else
         case LV_DRAW_TASK_TYPE_FILL: {
                 lv_draw_fill_dsc_t * draw_fill_dsc = (lv_draw_fill_dsc_t *) task->draw_dsc;
-                // if((draw_fill_dsc->grad.dir == (lv_grad_dir_t)LV_GRAD_DIR_NONE)) {
+                lv_grad_dir_t grad_dir = draw_fill_dsc->grad.dir;
+                if(grad_dir == LV_GRAD_DIR_NONE || 
+                    ((grad_dir == LV_GRAD_DIR_HOR || grad_dir == LV_GRAD_DIR_VER) && draw_fill_dsc->radius == 0)) {
                     if(task->preference_score > 80) {
                         task->preference_score = 80;
                         task->preferred_draw_unit_id = DRAW_UNIT_ID_NEMA_GFX;
                     }
                     return 1;
-                // }
+                }
                 break;
             }
         case LV_DRAW_TASK_TYPE_TRIANGLE: {
