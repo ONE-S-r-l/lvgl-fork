@@ -475,10 +475,10 @@ static lv_demo_benchmark_scene_dsc_t scenes[] = {
     // {.name = "Multiple arcs",              .scene_time = 3000, .create_cb = multiple_arcs_cb},
 
     {.name = "Containers",                 .scene_time = 3000, .create_cb = containers_cb},
-    // {.name = "Containers with overlay",    .scene_time = 3000, .create_cb = containers_with_overlay_cb},
-    // {.name = "Containers with opa",        .scene_time = 3000, .create_cb = containers_with_opa_cb},
-    // {.name = "Containers with opa_layer",  .scene_time = 3000, .create_cb = containers_with_opa_layer_cb},
-    // {.name = "Containers with scrolling",  .scene_time = 5000, .create_cb = containers_with_scrolling_cb},
+    {.name = "Containers with overlay",    .scene_time = 3000, .create_cb = containers_with_overlay_cb},
+    {.name = "Containers with opa",        .scene_time = 3000, .create_cb = containers_with_opa_cb},
+    {.name = "Containers with opa_layer",  .scene_time = 3000, .create_cb = containers_with_opa_layer_cb},
+    {.name = "Containers with scrolling",  .scene_time = 5000, .create_cb = containers_with_scrolling_cb},
 
     // {.name = "Widgets demo",               .scene_time = 20000,           .create_cb = widgets_demo_cb},
 
@@ -862,6 +862,7 @@ static lv_obj_t * card_create(void)
     lv_obj_t * panel = lv_obj_create(lv_screen_active());
     lv_obj_set_size(panel, 270, 120);
     lv_obj_set_style_pad_all(panel, 8, 0);
+    lv_obj_set_style_radius(panel, 0, LV_PART_MAIN);
 
     lv_palette_t palette = LV_PALETTE_LIME;
     lv_obj_set_style_bg_grad_dir(panel, LV_GRAD_DIR_VER, LV_PART_MAIN);
