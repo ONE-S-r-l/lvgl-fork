@@ -66,7 +66,8 @@ static void lvgl_thread_entry(void *parameter)
 #if LV_USE_LOG
     lv_log_register_print_cb(lv_rt_log);
 #endif /* LV_USE_LOG */
-    lv_init(0);
+    struct lv_init_config config = { .init_g2d = false };
+    lv_init(&config);
     lv_tick_set_cb(&rt_tick_get_millisecond);
     lv_port_disp_init();
     lv_port_indev_init();

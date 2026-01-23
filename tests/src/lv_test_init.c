@@ -12,7 +12,8 @@ static void test_log_print_cb(lv_log_level_t level, const char * buf);
 
 void lv_test_init(void)
 {
-    lv_init(0);
+    struct lv_init_config config = { .init_g2d = false };
+    lv_init(&config);
 
     lv_log_register_print_cb(test_log_print_cb);
 

@@ -4,7 +4,8 @@
 
 int main(void)
 {
-    lv_init(0);
+    struct lv_init_config config = { .init_g2d = false };
+    lv_init(&config);
     return 0;
 }
 #endif

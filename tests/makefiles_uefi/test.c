@@ -3,7 +3,8 @@
 
 int efi_main(void * image_handle, void * system_table)
 {
-    lv_init();
+    struct lv_init_config config = { .init_g2d = false };
+    lv_init(&config);
     return 0;
 }
 
