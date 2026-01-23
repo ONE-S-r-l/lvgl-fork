@@ -463,24 +463,24 @@ static void widgets_demo_cb(void)
  **********************/
 
 static lv_demo_benchmark_scene_dsc_t scenes[] = {
-    {.name = "Empty screen",               .scene_time = 3000, .create_cb = empty_screen_cb},
-    {.name = "Moving wallpaper",           .scene_time = 3000, .create_cb = moving_wallpaper_cb},
-    {.name = "Single rectangle",           .scene_time = 3000, .create_cb = single_rectangle_cb},
-    {.name = "Multiple rectangles",        .scene_time = 3000, .create_cb = multiple_rectangles_cb},
-    {.name = "Multiple RGB images",        .scene_time = 3000, .create_cb = multiple_rgb_images_cb},
-    {.name = "Multiple ARGB images",       .scene_time = 3000, .create_cb = multiple_argb_images_cb},
-    {.name = "Rotated ARGB images",        .scene_time = 3000, .create_cb = rotated_argb_image_cb},
-    {.name = "Multiple labels",            .scene_time = 3000, .create_cb = multiple_labels_cb},
-    {.name = "Screen sized text",          .scene_time = 5000, .create_cb = screen_sized_text_cb},
-    {.name = "Multiple arcs",              .scene_time = 3000, .create_cb = multiple_arcs_cb},
+    // {.name = "Empty screen",               .scene_time = 3000, .create_cb = empty_screen_cb},
+    // {.name = "Moving wallpaper",           .scene_time = 3000, .create_cb = moving_wallpaper_cb},
+    // {.name = "Single rectangle",           .scene_time = 3000, .create_cb = single_rectangle_cb},
+    // {.name = "Multiple rectangles",        .scene_time = 3000, .create_cb = multiple_rectangles_cb},
+    // {.name = "Multiple RGB images",        .scene_time = 3000, .create_cb = multiple_rgb_images_cb},
+    // {.name = "Multiple ARGB images",       .scene_time = 3000, .create_cb = multiple_argb_images_cb},
+    // {.name = "Rotated ARGB images",        .scene_time = 3000, .create_cb = rotated_argb_image_cb},
+    // {.name = "Multiple labels",            .scene_time = 3000, .create_cb = multiple_labels_cb},
+    // {.name = "Screen sized text",          .scene_time = 5000, .create_cb = screen_sized_text_cb},
+    // {.name = "Multiple arcs",              .scene_time = 3000, .create_cb = multiple_arcs_cb},
 
     {.name = "Containers",                 .scene_time = 3000, .create_cb = containers_cb},
-    {.name = "Containers with overlay",    .scene_time = 3000, .create_cb = containers_with_overlay_cb},
-    {.name = "Containers with opa",        .scene_time = 3000, .create_cb = containers_with_opa_cb},
-    {.name = "Containers with opa_layer",  .scene_time = 3000, .create_cb = containers_with_opa_layer_cb},
-    {.name = "Containers with scrolling",  .scene_time = 5000, .create_cb = containers_with_scrolling_cb},
+    // {.name = "Containers with overlay",    .scene_time = 3000, .create_cb = containers_with_overlay_cb},
+    // {.name = "Containers with opa",        .scene_time = 3000, .create_cb = containers_with_opa_cb},
+    // {.name = "Containers with opa_layer",  .scene_time = 3000, .create_cb = containers_with_opa_layer_cb},
+    // {.name = "Containers with scrolling",  .scene_time = 5000, .create_cb = containers_with_scrolling_cb},
 
-    {.name = "Widgets demo",               .scene_time = 20000,           .create_cb = widgets_demo_cb},
+    // {.name = "Widgets demo",               .scene_time = 20000,           .create_cb = widgets_demo_cb},
 
     {.name = "", .create_cb = NULL}
 };
@@ -862,6 +862,13 @@ static lv_obj_t * card_create(void)
     lv_obj_t * panel = lv_obj_create(lv_screen_active());
     lv_obj_set_size(panel, 270, 120);
     lv_obj_set_style_pad_all(panel, 8, 0);
+
+    lv_palette_t palette = LV_PALETTE_LIME;
+    lv_obj_set_style_bg_grad_dir(panel, LV_GRAD_DIR_VER, LV_PART_MAIN);
+    lv_obj_set_style_bg_color(panel, lv_palette_main(palette), LV_PART_MAIN);  // Initial color
+    lv_obj_set_style_bg_main_opa(panel, LV_OPA_COVER, LV_PART_MAIN);
+    lv_obj_set_style_bg_grad_color(panel, lv_palette_darken(palette, 2), LV_PART_MAIN);  // Final color
+    lv_obj_set_style_bg_grad_opa(panel, LV_OPA_COVER, LV_PART_MAIN);
 
     LV_IMAGE_DECLARE(img_benchmark_avatar);
     lv_obj_t * child = lv_image_create(panel);
