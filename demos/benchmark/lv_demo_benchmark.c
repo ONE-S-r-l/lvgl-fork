@@ -494,10 +494,12 @@ static void widgets_demo_cb(void)
 static GradientConfig lime_gradient = {.start_color = 0xCDDC39, .start_opa = LV_OPA_COVER, .end_color = 0x827717, .end_opa = LV_OPA_COVER};
 
 static CardConfig small_card_config = {.width = 270, .height = 120};
+static CardConfig small_card_no_rad_config = {.width = 270, .height = 120, .no_radius = true};
 static CardConfig small_card_grad_rad_config = {.width = 270, .height = 120, .gradient = &lime_gradient};
 static CardConfig small_card_grad_no_rad_config = {.width = 270, .height = 120, .no_radius = true, .gradient = &lime_gradient};
 
 static CardConfig large_card_config = {.width = 650, .height = 320};
+static CardConfig large_card_no_rad_config = {.width = 650, .height = 320, .no_radius = true};
 static CardConfig large_card_grad_rad_config = {.width = 650, .height = 320, .gradient = &lime_gradient};
 static CardConfig large_card_grad_no_rad_config = {.width = 650, .height = 320, .no_radius = true, .gradient = &lime_gradient};
 
@@ -519,17 +521,23 @@ static lv_demo_benchmark_scene_dsc_t scenes[] = {
     {.name = "Containers with opa_layer",  .scene_time = 3000, .create_cb = containers_with_opa_layer_cb, .args = &small_card_config},
     {.name = "Containers with scrolling",  .scene_time = 5000, .create_cb = containers_with_scrolling_cb, .args = &small_card_config},
 
-    {.name = "Containers (grad, rad)",                 .scene_time = 3000, .create_cb = containers_cb, .args = &small_card_grad_rad_config},
-    {.name = "Containers with overlay (grad, rad)",    .scene_time = 3000, .create_cb = containers_with_overlay_cb, .args = &small_card_grad_rad_config},
-    {.name = "Containers with opa (grad, rad)",        .scene_time = 3000, .create_cb = containers_with_opa_cb, .args = &small_card_grad_rad_config},
-    {.name = "Containers with opa_layer (grad, rad)",  .scene_time = 3000, .create_cb = containers_with_opa_layer_cb, .args = &small_card_grad_rad_config},
-    {.name = "Containers with scrolling (grad, rad)",  .scene_time = 5000, .create_cb = containers_with_scrolling_cb, .args = &small_card_grad_rad_config},
+    {.name = "Containers (no rad)",                 .scene_time = 3000, .create_cb = containers_cb, .args = &small_card_no_rad_config},
+    {.name = "Containers with overlay (no rad)",    .scene_time = 3000, .create_cb = containers_with_overlay_cb, .args = &small_card_no_rad_config},
+    {.name = "Containers with opa (no rad)",        .scene_time = 3000, .create_cb = containers_with_opa_cb, .args = &small_card_no_rad_config},
+    {.name = "Containers with opa_layer (no rad)",  .scene_time = 3000, .create_cb = containers_with_opa_layer_cb, .args = &small_card_no_rad_config},
+    {.name = "Containers with scrolling (no rad)",  .scene_time = 5000, .create_cb = containers_with_scrolling_cb, .args = &small_card_no_rad_config},
 
-    {.name = "Containers (grad, no rad)",                 .scene_time = 3000, .create_cb = containers_cb, .args = &small_card_grad_no_rad_config},
-    {.name = "Containers with overlay (grad, no rad)",    .scene_time = 3000, .create_cb = containers_with_overlay_cb, .args = &small_card_grad_no_rad_config},
-    {.name = "Containers with opa (grad, no rad)",        .scene_time = 3000, .create_cb = containers_with_opa_cb, .args = &small_card_grad_no_rad_config},
-    {.name = "Containers with opa_layer (grad, no rad)",  .scene_time = 3000, .create_cb = containers_with_opa_layer_cb, .args = &small_card_grad_no_rad_config},
-    {.name = "Containers with scrolling (grad, no rad)",  .scene_time = 5000, .create_cb = containers_with_scrolling_cb, .args = &small_card_grad_no_rad_config},
+    {.name = "Containers (grad rad)",                 .scene_time = 3000, .create_cb = containers_cb, .args = &small_card_grad_rad_config},
+    {.name = "Containers with overlay (grad rad)",    .scene_time = 3000, .create_cb = containers_with_overlay_cb, .args = &small_card_grad_rad_config},
+    {.name = "Containers with opa (grad rad)",        .scene_time = 3000, .create_cb = containers_with_opa_cb, .args = &small_card_grad_rad_config},
+    {.name = "Containers with opa_layer (grad rad)",  .scene_time = 3000, .create_cb = containers_with_opa_layer_cb, .args = &small_card_grad_rad_config},
+    {.name = "Containers with scrolling (grad rad)",  .scene_time = 5000, .create_cb = containers_with_scrolling_cb, .args = &small_card_grad_rad_config},
+
+    {.name = "Containers (grad no rad)",                 .scene_time = 3000, .create_cb = containers_cb, .args = &small_card_grad_no_rad_config},
+    {.name = "Containers with overlay (grad no rad)",    .scene_time = 3000, .create_cb = containers_with_overlay_cb, .args = &small_card_grad_no_rad_config},
+    {.name = "Containers with opa (grad no rad)",        .scene_time = 3000, .create_cb = containers_with_opa_cb, .args = &small_card_grad_no_rad_config},
+    {.name = "Containers with opa_layer (grad no rad)",  .scene_time = 3000, .create_cb = containers_with_opa_layer_cb, .args = &small_card_grad_no_rad_config},
+    {.name = "Containers with scrolling (grad no rad)",  .scene_time = 5000, .create_cb = containers_with_scrolling_cb, .args = &small_card_grad_no_rad_config},
 
     {.name = "Container",                 .scene_time = 3000, .create_cb = containers_cb, .args = &large_card_config},
     {.name = "Container with overlay",    .scene_time = 3000, .create_cb = containers_with_overlay_cb, .args = &large_card_config},
@@ -537,17 +545,23 @@ static lv_demo_benchmark_scene_dsc_t scenes[] = {
     {.name = "Container with opa_layer",  .scene_time = 3000, .create_cb = containers_with_opa_layer_cb, .args = &large_card_config},
     {.name = "Container with scrolling",  .scene_time = 5000, .create_cb = containers_with_scrolling_cb, .args = &large_card_config},
 
-    {.name = "Container (grad, rad)",                 .scene_time = 3000, .create_cb = containers_cb, .args = &large_card_grad_rad_config},
-    {.name = "Container with overlay (grad, rad)",    .scene_time = 3000, .create_cb = containers_with_overlay_cb, .args = &large_card_grad_rad_config},
-    {.name = "Container with opa (grad, rad)",        .scene_time = 3000, .create_cb = containers_with_opa_cb, .args = &large_card_grad_rad_config},
-    {.name = "Container with opa_layer (grad, rad)",  .scene_time = 3000, .create_cb = containers_with_opa_layer_cb, .args = &large_card_grad_rad_config},
-    {.name = "Container with scrolling (grad, rad)",  .scene_time = 5000, .create_cb = containers_with_scrolling_cb, .args = &large_card_grad_rad_config},
+    {.name = "Container (no rad)",                 .scene_time = 3000, .create_cb = containers_cb, .args = &large_card_no_rad_config},
+    {.name = "Container with overlay (no rad)",    .scene_time = 3000, .create_cb = containers_with_overlay_cb, .args = &large_card_no_rad_config},
+    {.name = "Container with opa (no rad)",        .scene_time = 3000, .create_cb = containers_with_opa_cb, .args = &large_card_no_rad_config},
+    {.name = "Container with opa_layer (no rad)",  .scene_time = 3000, .create_cb = containers_with_opa_layer_cb, .args = &large_card_no_rad_config},
+    {.name = "Container with scrolling (no rad)",  .scene_time = 5000, .create_cb = containers_with_scrolling_cb, .args = &large_card_no_rad_config},
 
-    {.name = "Container (grad, no rad)",                 .scene_time = 3000, .create_cb = containers_cb, .args = &large_card_grad_no_rad_config},
-    {.name = "Container with overlay (grad, no rad)",    .scene_time = 3000, .create_cb = containers_with_overlay_cb, .args = &large_card_grad_no_rad_config},
-    {.name = "Container with opa (grad, no rad)",        .scene_time = 3000, .create_cb = containers_with_opa_cb, .args = &large_card_grad_no_rad_config},
-    {.name = "Container with opa_layer (grad, no rad)",  .scene_time = 3000, .create_cb = containers_with_opa_layer_cb, .args = &large_card_grad_no_rad_config},
-    {.name = "Container with scrolling (grad, no rad)",  .scene_time = 5000, .create_cb = containers_with_scrolling_cb, .args = &large_card_grad_no_rad_config},
+    {.name = "Container (grad rad)",                 .scene_time = 3000, .create_cb = containers_cb, .args = &large_card_grad_rad_config},
+    {.name = "Container with overlay (grad rad)",    .scene_time = 3000, .create_cb = containers_with_overlay_cb, .args = &large_card_grad_rad_config},
+    {.name = "Container with opa (grad rad)",        .scene_time = 3000, .create_cb = containers_with_opa_cb, .args = &large_card_grad_rad_config},
+    {.name = "Container with opa_layer (grad rad)",  .scene_time = 3000, .create_cb = containers_with_opa_layer_cb, .args = &large_card_grad_rad_config},
+    {.name = "Container with scrolling (grad rad)",  .scene_time = 5000, .create_cb = containers_with_scrolling_cb, .args = &large_card_grad_rad_config},
+
+    {.name = "Container (grad no rad)",                 .scene_time = 3000, .create_cb = containers_cb, .args = &large_card_grad_no_rad_config},
+    {.name = "Container with overlay (grad no rad)",    .scene_time = 3000, .create_cb = containers_with_overlay_cb, .args = &large_card_grad_no_rad_config},
+    {.name = "Container with opa (grad no rad)",        .scene_time = 3000, .create_cb = containers_with_opa_cb, .args = &large_card_grad_no_rad_config},
+    {.name = "Container with opa_layer (grad no rad)",  .scene_time = 3000, .create_cb = containers_with_opa_layer_cb, .args = &large_card_grad_no_rad_config},
+    {.name = "Container with scrolling (grad no rad)",  .scene_time = 5000, .create_cb = containers_with_scrolling_cb, .args = &large_card_grad_no_rad_config},
 
     // {.name = "Widgets demo",               .scene_time = 20000,           .create_cb = widgets_demo_cb},
 
