@@ -50,7 +50,8 @@ LV_FONT_DECLARE(lv_font_benchmark_montserrat_26_aligned)
 
 typedef struct {
     const char * name;
-    void (*create_cb)(void);
+    void (*create_cb)(void *args);
+    void *args;
     uint32_t scene_time;
     uint32_t cpu_avg_usage;
     uint32_t fps_avg;

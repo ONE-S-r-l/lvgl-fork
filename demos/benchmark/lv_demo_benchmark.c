@@ -51,6 +51,19 @@
  *      TYPEDEFS
  **********************/
 
+ typedef struct {
+    uint32_t start_color;
+    lv_opa_t start_opa;
+    uint32_t end_color;
+    lv_opa_t end_opa;
+} GradientConfig;
+
+typedef struct {
+    int32_t width;
+    int32_t height;
+    bool no_radius;
+    GradientConfig * gradient;
+} CardConfig;
 
 /**********************
  *  STATIC PROTOTYPES
@@ -79,10 +92,10 @@ static void color_anim_cb(void * var, int32_t v);
 static void color_anim(lv_obj_t * obj);
 static void arc_anim(lv_obj_t * obj);
 
-static lv_obj_t * card_create(void);
-static void set_background_gradient(lv_obj_t * obj);
+static lv_obj_t * card_create(CardConfig * card_config);
+static const CardConfig * get_default_card_config();
 
-static void empty_screen_cb(void)
+static void empty_screen_cb(void * args)
 {
     color_anim(lv_screen_active());
 }
@@ -319,15 +332,18 @@ static void multiple_arcs_cb(void)
     }
 }
 
-static void containers_cb(void)
+static void containers_cb(void * args)
 {
+    CardConfig * card_config = (CardConfig *)args;
+    LV_ASSERT_NULL(card_config);
+
     lv_obj_t * scr = lv_screen_active();
     lv_obj_set_flex_flow(scr, LV_FLEX_FLOW_ROW_WRAP);
     lv_obj_set_flex_align(scr, LV_FLEX_ALIGN_SPACE_EVENLY, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_SPACE_EVENLY);
     lv_obj_set_style_pad_bottom(scr, FALL_HEIGHT + PAD_BASIC, 0);
 
-    int32_t hor_cnt = ((int32_t)lv_obj_get_content_width(scr)) / 350;
-    int32_t ver_cnt = ((int32_t)lv_obj_get_content_height(scr)) / 170;
+    int32_t hor_cnt = ((int32_t)lv_obj_get_content_width(scr)) / (card_config->width + 80);
+    int32_t ver_cnt = ((int32_t)lv_obj_get_content_height(scr)) / (card_config->height + 50);
 
     if(hor_cnt < 1) hor_cnt = 1;
     if(ver_cnt < 1) ver_cnt = 1;
@@ -336,22 +352,25 @@ static void containers_cb(void)
     for(y = 0; y < ver_cnt; y++) {
         int32_t x;
         for(x = 0; x < hor_cnt; x++) {
-            lv_obj_t * card = card_create();
+            lv_obj_t * card = card_create(card_config);
             if(x == 0) lv_obj_add_flag(card, LV_OBJ_FLAG_FLEX_IN_NEW_TRACK);
             fall_anim(card, 30);
         }
     }
 }
 
-static void containers_with_overlay_cb(void)
+static void containers_with_overlay_cb(void * args)
 {
+    CardConfig * card_config = (CardConfig *)args;
+    LV_ASSERT_NULL(card_config);
+
     lv_obj_t * scr = lv_screen_active();
     lv_obj_set_flex_flow(scr, LV_FLEX_FLOW_ROW_WRAP);
     lv_obj_set_flex_align(scr, LV_FLEX_ALIGN_SPACE_EVENLY, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_SPACE_EVENLY);
     lv_obj_set_style_pad_bottom(scr, FALL_HEIGHT + PAD_BASIC, 0);
 
-    int32_t hor_cnt = ((int32_t)lv_obj_get_content_width(scr)) / 350;
-    int32_t ver_cnt = ((int32_t)lv_obj_get_content_height(scr)) / 170;
+    int32_t hor_cnt = ((int32_t)lv_obj_get_content_width(scr)) / (card_config->width + 80);
+    int32_t ver_cnt = ((int32_t)lv_obj_get_content_height(scr)) / (card_config->height + 50);
 
     if(hor_cnt < 1) hor_cnt = 1;
     if(ver_cnt < 1) ver_cnt = 1;
@@ -360,7 +379,7 @@ static void containers_with_overlay_cb(void)
     for(y = 0; y < ver_cnt; y++) {
         int32_t x;
         for(x = 0; x < hor_cnt; x++) {
-            lv_obj_t * card = card_create();
+            lv_obj_t * card = card_create(card_config);
             if(x == 0) lv_obj_add_flag(card, LV_OBJ_FLAG_FLEX_IN_NEW_TRACK);
             fall_anim(card, 30);
         }
@@ -370,15 +389,18 @@ static void containers_with_overlay_cb(void)
     color_anim(lv_layer_top());
 }
 
-static void containers_with_opa_cb(void)
+static void containers_with_opa_cb(void * args)
 {
+    CardConfig * card_config = (CardConfig *)args;
+    LV_ASSERT_NULL(card_config);
+
     lv_obj_t * scr = lv_screen_active();
     lv_obj_set_flex_flow(scr, LV_FLEX_FLOW_ROW_WRAP);
     lv_obj_set_flex_align(scr, LV_FLEX_ALIGN_SPACE_EVENLY, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_SPACE_EVENLY);
     lv_obj_set_style_pad_bottom(scr, FALL_HEIGHT + PAD_BASIC, 0);
 
-    int32_t hor_cnt = ((int32_t)lv_obj_get_content_width(scr)) / 350;
-    int32_t ver_cnt = ((int32_t)lv_obj_get_content_height(scr)) / 170;
+    int32_t hor_cnt = ((int32_t)lv_obj_get_content_width(scr)) / (card_config->width + 80);
+    int32_t ver_cnt = ((int32_t)lv_obj_get_content_height(scr)) / (card_config->height + 50);
 
     if(hor_cnt < 1) hor_cnt = 1;
     if(ver_cnt < 1) ver_cnt = 1;
@@ -387,7 +409,7 @@ static void containers_with_opa_cb(void)
     for(y = 0; y < ver_cnt; y++) {
         int32_t x;
         for(x = 0; x < hor_cnt; x++) {
-            lv_obj_t * card = card_create();
+            lv_obj_t * card = card_create(card_config);
             if(x == 0) lv_obj_add_flag(card, LV_OBJ_FLAG_FLEX_IN_NEW_TRACK);
             lv_obj_set_style_opa(card, LV_OPA_50, 0);
             fall_anim(card, 30);
@@ -395,15 +417,18 @@ static void containers_with_opa_cb(void)
     }
 }
 
-static void containers_with_opa_layer_cb(void)
+static void containers_with_opa_layer_cb(void * args)
 {
+    CardConfig * card_config = (CardConfig *)args;
+    LV_ASSERT_NULL(card_config);
+
     lv_obj_t * scr = lv_screen_active();
     lv_obj_set_flex_flow(scr, LV_FLEX_FLOW_ROW_WRAP);
     lv_obj_set_flex_align(scr, LV_FLEX_ALIGN_SPACE_EVENLY, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_SPACE_EVENLY);
     lv_obj_set_style_pad_bottom(scr, FALL_HEIGHT + PAD_BASIC, 0);
 
-    int32_t hor_cnt = ((int32_t)lv_obj_get_content_width(scr)) / 350;
-    int32_t ver_cnt = ((int32_t)lv_obj_get_content_height(scr)) / 170;
+    int32_t hor_cnt = ((int32_t)lv_obj_get_content_width(scr)) / (card_config->width + 80);
+    int32_t ver_cnt = ((int32_t)lv_obj_get_content_height(scr)) / (card_config->height + 50);
 
     if(hor_cnt < 1) hor_cnt = 1;
     if(ver_cnt < 1) ver_cnt = 1;
@@ -412,7 +437,7 @@ static void containers_with_opa_layer_cb(void)
     for(y = 0; y < ver_cnt; y++) {
         int32_t x;
         for(x = 0; x < hor_cnt; x++) {
-            lv_obj_t * card = card_create();
+            lv_obj_t * card = card_create(card_config);
             lv_obj_set_style_opa_layered(card, LV_OPA_50, 0);
             if(x == 0) lv_obj_add_flag(card, LV_OBJ_FLAG_FLEX_IN_NEW_TRACK);
             fall_anim(card, 30);
@@ -420,15 +445,18 @@ static void containers_with_opa_layer_cb(void)
     }
 }
 
-static void containers_with_scrolling_cb(void)
+static void containers_with_scrolling_cb(void * args)
 {
+    CardConfig * card_config = (CardConfig *)args;
+    LV_ASSERT_NULL(card_config);
+
     lv_obj_t * scr = lv_screen_active();
     lv_obj_set_flex_flow(scr, LV_FLEX_FLOW_ROW_WRAP);
     lv_obj_set_flex_align(scr, LV_FLEX_ALIGN_SPACE_EVENLY, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
     lv_obj_set_style_pad_row(scr, 32, 0);
 
-    int32_t hor_cnt = ((int32_t)lv_obj_get_content_width(scr)) / 400;
-    int32_t ver_cnt = ((int32_t)lv_obj_get_content_height(scr)) / (120 + 32);
+    int32_t hor_cnt = ((int32_t)lv_obj_get_content_width(scr)) / (card_config->width + 130);
+    int32_t ver_cnt = ((int32_t)lv_obj_get_content_height(scr)) / (card_config->height + 32);
 
     if(hor_cnt < 1) hor_cnt = 1;
     if(ver_cnt < 1) ver_cnt = 1;
@@ -440,7 +468,7 @@ static void containers_with_scrolling_cb(void)
     for(y = 0; y < ver_cnt; y++) {
         int32_t x;
         for(x = 0; x < hor_cnt; x++) {
-            lv_obj_t * card = card_create();
+            lv_obj_t * card = card_create(card_config);
             if(x == 0) lv_obj_add_flag(card, LV_OBJ_FLAG_FLEX_IN_NEW_TRACK);
         }
     }
@@ -463,8 +491,18 @@ static void widgets_demo_cb(void)
  *  STATIC VARIABLES
  **********************/
 
+static GradientConfig lime_gradient = {.start_color = 0xCDDC39, .start_opa = LV_OPA_COVER, .end_color = 0x827717, .end_opa = LV_OPA_COVER};
+
+static CardConfig small_card_config = {.width = 270, .height = 120};
+static CardConfig small_card_grad_rad_config = {.width = 270, .height = 120, .gradient = &lime_gradient};
+static CardConfig small_card_grad_no_rad_config = {.width = 270, .height = 120, .no_radius = true, .gradient = &lime_gradient};
+
+static CardConfig large_card_config = {.width = 650, .height = 320};
+static CardConfig large_card_grad_rad_config = {.width = 650, .height = 320, .gradient = &lime_gradient};
+static CardConfig large_card_grad_no_rad_config = {.width = 650, .height = 320, .no_radius = true, .gradient = &lime_gradient};
+
 static lv_demo_benchmark_scene_dsc_t scenes[] = {
-    // {.name = "Empty screen",               .scene_time = 3000, .create_cb = empty_screen_cb},
+    {.name = "Empty screen",               .scene_time = 3000, .create_cb = empty_screen_cb},
     // {.name = "Moving wallpaper",           .scene_time = 3000, .create_cb = moving_wallpaper_cb},
     // {.name = "Single rectangle",           .scene_time = 3000, .create_cb = single_rectangle_cb},
     // {.name = "Multiple rectangles",        .scene_time = 3000, .create_cb = multiple_rectangles_cb},
@@ -475,11 +513,41 @@ static lv_demo_benchmark_scene_dsc_t scenes[] = {
     // {.name = "Screen sized text",          .scene_time = 5000, .create_cb = screen_sized_text_cb},
     // {.name = "Multiple arcs",              .scene_time = 3000, .create_cb = multiple_arcs_cb},
 
-    {.name = "Containers",                 .scene_time = 3000, .create_cb = containers_cb},
-    {.name = "Containers with overlay",    .scene_time = 3000, .create_cb = containers_with_overlay_cb},
-    {.name = "Containers with opa",        .scene_time = 3000, .create_cb = containers_with_opa_cb},
-    {.name = "Containers with opa_layer",  .scene_time = 3000, .create_cb = containers_with_opa_layer_cb},
-    {.name = "Containers with scrolling",  .scene_time = 5000, .create_cb = containers_with_scrolling_cb},
+    {.name = "Containers",                 .scene_time = 3000, .create_cb = containers_cb, .args = &small_card_config},
+    {.name = "Containers with overlay",    .scene_time = 3000, .create_cb = containers_with_overlay_cb, .args = &small_card_config},
+    {.name = "Containers with opa",        .scene_time = 3000, .create_cb = containers_with_opa_cb, .args = &small_card_config},
+    {.name = "Containers with opa_layer",  .scene_time = 3000, .create_cb = containers_with_opa_layer_cb, .args = &small_card_config},
+    {.name = "Containers with scrolling",  .scene_time = 5000, .create_cb = containers_with_scrolling_cb, .args = &small_card_config},
+
+    {.name = "Containers (grad, rad)",                 .scene_time = 3000, .create_cb = containers_cb, .args = &small_card_grad_rad_config},
+    {.name = "Containers with overlay (grad, rad)",    .scene_time = 3000, .create_cb = containers_with_overlay_cb, .args = &small_card_grad_rad_config},
+    {.name = "Containers with opa (grad, rad)",        .scene_time = 3000, .create_cb = containers_with_opa_cb, .args = &small_card_grad_rad_config},
+    {.name = "Containers with opa_layer (grad, rad)",  .scene_time = 3000, .create_cb = containers_with_opa_layer_cb, .args = &small_card_grad_rad_config},
+    {.name = "Containers with scrolling (grad, rad)",  .scene_time = 5000, .create_cb = containers_with_scrolling_cb, .args = &small_card_grad_rad_config},
+
+    {.name = "Containers (grad, no rad)",                 .scene_time = 3000, .create_cb = containers_cb, .args = &small_card_grad_no_rad_config},
+    {.name = "Containers with overlay (grad, no rad)",    .scene_time = 3000, .create_cb = containers_with_overlay_cb, .args = &small_card_grad_no_rad_config},
+    {.name = "Containers with opa (grad, no rad)",        .scene_time = 3000, .create_cb = containers_with_opa_cb, .args = &small_card_grad_no_rad_config},
+    {.name = "Containers with opa_layer (grad, no rad)",  .scene_time = 3000, .create_cb = containers_with_opa_layer_cb, .args = &small_card_grad_no_rad_config},
+    {.name = "Containers with scrolling (grad, no rad)",  .scene_time = 5000, .create_cb = containers_with_scrolling_cb, .args = &small_card_grad_no_rad_config},
+
+    {.name = "Container",                 .scene_time = 3000, .create_cb = containers_cb, .args = &large_card_config},
+    {.name = "Container with overlay",    .scene_time = 3000, .create_cb = containers_with_overlay_cb, .args = &large_card_config},
+    {.name = "Container with opa",        .scene_time = 3000, .create_cb = containers_with_opa_cb, .args = &large_card_config},
+    {.name = "Container with opa_layer",  .scene_time = 3000, .create_cb = containers_with_opa_layer_cb, .args = &large_card_config},
+    {.name = "Container with scrolling",  .scene_time = 5000, .create_cb = containers_with_scrolling_cb, .args = &large_card_config},
+
+    {.name = "Container (grad, rad)",                 .scene_time = 3000, .create_cb = containers_cb, .args = &large_card_grad_rad_config},
+    {.name = "Container with overlay (grad, rad)",    .scene_time = 3000, .create_cb = containers_with_overlay_cb, .args = &large_card_grad_rad_config},
+    {.name = "Container with opa (grad, rad)",        .scene_time = 3000, .create_cb = containers_with_opa_cb, .args = &large_card_grad_rad_config},
+    {.name = "Container with opa_layer (grad, rad)",  .scene_time = 3000, .create_cb = containers_with_opa_layer_cb, .args = &large_card_grad_rad_config},
+    {.name = "Container with scrolling (grad, rad)",  .scene_time = 5000, .create_cb = containers_with_scrolling_cb, .args = &large_card_grad_rad_config},
+
+    {.name = "Container (grad, no rad)",                 .scene_time = 3000, .create_cb = containers_cb, .args = &large_card_grad_no_rad_config},
+    {.name = "Container with overlay (grad, no rad)",    .scene_time = 3000, .create_cb = containers_with_overlay_cb, .args = &large_card_grad_no_rad_config},
+    {.name = "Container with opa (grad, no rad)",        .scene_time = 3000, .create_cb = containers_with_opa_cb, .args = &large_card_grad_no_rad_config},
+    {.name = "Container with opa_layer (grad, no rad)",  .scene_time = 3000, .create_cb = containers_with_opa_layer_cb, .args = &large_card_grad_no_rad_config},
+    {.name = "Container with scrolling (grad, no rad)",  .scene_time = 5000, .create_cb = containers_with_scrolling_cb, .args = &large_card_grad_no_rad_config},
 
     // {.name = "Widgets demo",               .scene_time = 20000,           .create_cb = widgets_demo_cb},
 
@@ -649,7 +717,7 @@ static void load_scene(uint32_t scene)
     lv_obj_set_style_bg_opa(lv_layer_top(), LV_OPA_TRANSP, 0);
 
     rnd_reset();
-    if(scenes[scene].create_cb) scenes[scene].create_cb();
+    if(scenes[scene].create_cb) scenes[scene].create_cb(scenes[scene].args);
 }
 
 static void next_scene_timer_cb(lv_timer_t * timer)
@@ -858,12 +926,25 @@ static void fall_anim(lv_obj_t * obj, int32_t y_max)
     lv_anim_start(&a);
 }
 
-static lv_obj_t * card_create(void)
+static void set_background_gradient(lv_obj_t * obj, GradientConfig * gradient) {
+    lv_obj_set_style_bg_grad_dir(obj, LV_GRAD_DIR_VER, LV_PART_MAIN);
+    lv_obj_set_style_bg_color(obj, lv_color_hex(gradient->start_color), LV_PART_MAIN);
+    lv_obj_set_style_bg_main_opa(obj, gradient->start_opa, LV_PART_MAIN);
+    lv_obj_set_style_bg_grad_color(obj, lv_color_hex(gradient->end_color), LV_PART_MAIN);
+    lv_obj_set_style_bg_grad_opa(obj, gradient->end_opa, LV_PART_MAIN);
+}
+
+static lv_obj_t * card_create(CardConfig * card_config)
 {
+    LV_ASSERT_NULL(card_config);
+
     lv_obj_t * panel = lv_obj_create(lv_screen_active());
-    lv_obj_set_size(panel, 270, 120);
+    lv_obj_set_size(panel, card_config->width, card_config->height);
     lv_obj_set_style_pad_all(panel, 8, 0);
-    lv_obj_set_style_radius(panel, 0, LV_PART_MAIN);
+    if (card_config->no_radius)
+        lv_obj_set_style_radius(panel, 0, LV_PART_MAIN);
+    if (card_config->gradient != NULL)
+        set_background_gradient(panel, card_config->gradient);
 
     LV_IMAGE_DECLARE(img_benchmark_avatar);
     lv_obj_t * child = lv_image_create(panel);
@@ -899,16 +980,6 @@ static lv_obj_t * card_create(void)
     lv_label_set_text_static(child, "Connect");
 
     return panel;
-}
-
-static void set_background_gradient(lv_obj_t * obj)
-{
-    lv_palette_t palette = LV_PALETTE_LIME;
-    lv_obj_set_style_bg_grad_dir(obj, LV_GRAD_DIR_VER, LV_PART_MAIN);
-    lv_obj_set_style_bg_color(obj, lv_palette_main(palette), LV_PART_MAIN);  // Initial color
-    lv_obj_set_style_bg_main_opa(obj, LV_OPA_COVER, LV_PART_MAIN);
-    lv_obj_set_style_bg_grad_color(obj, lv_palette_darken(palette, 2), LV_PART_MAIN);  // Final color
-    lv_obj_set_style_bg_grad_opa(obj, LV_OPA_COVER, LV_PART_MAIN);
 }
 
 static void rnd_reset(void)
