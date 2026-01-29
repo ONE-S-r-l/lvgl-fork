@@ -51,6 +51,17 @@
  *      TYPEDEFS
  **********************/
 
+typedef struct {
+    lv_grad_dir_t direction;
+    uint32_t start_color;
+    lv_opa_t start_opa;
+    uint32_t end_color;
+    lv_opa_t end_opa;
+    int32_t start_x;
+    int32_t start_y;
+    int32_t end_x;
+    int32_t end_y;
+} GradientConfig;
 
 /**********************
  *  STATIC PROTOTYPES
@@ -80,6 +91,8 @@ static void color_anim(lv_obj_t * obj);
 static void arc_anim(lv_obj_t * obj);
 
 static lv_obj_t * card_create(void);
+static lv_obj_t * empty_card_create(lv_grad_dsc_t * grad);
+static void initialize_gradient(lv_grad_dsc_t * dsc, const GradientConfig * config);
 
 static void empty_screen_cb(void)
 {
@@ -448,6 +461,39 @@ static void containers_with_scrolling_cb(void)
     scroll_anim(scr, lv_obj_get_scroll_bottom(scr));
 }
 
+static void gradients_cb(void)
+{
+    lv_obj_t * scr = lv_screen_active();
+    lv_obj_set_flex_flow(scr, LV_FLEX_FLOW_ROW_WRAP);
+    lv_obj_set_flex_align(scr, LV_FLEX_ALIGN_SPACE_EVENLY, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_SPACE_EVENLY);
+    lv_obj_set_style_pad_bottom(scr, FALL_HEIGHT + PAD_BASIC, 0);
+
+    int32_t hor_cnt = ((int32_t)lv_obj_get_content_width(scr)) / 350;
+    int32_t ver_cnt = ((int32_t)lv_obj_get_content_height(scr)) / 170;
+
+    if(hor_cnt < 1) hor_cnt = 1;
+    if(ver_cnt < 1) ver_cnt = 1;
+
+    GradientConfig grad_config = {.direction = LV_GRAD_DIR_VER,
+        .start_color = 0xCDDC39,
+        .start_opa = LV_OPA_COVER,
+        .end_color = 0x827717,
+        .end_opa = LV_OPA_COVER};
+
+    static lv_grad_dsc_t grad_dsc = {};
+    initialize_gradient(&grad_dsc, &grad_config);
+
+    int32_t y;
+    for(y = 0; y < ver_cnt; y++) {
+        int32_t x;
+        for(x = 0; x < hor_cnt; x++) {
+            lv_obj_t * card = empty_card_create(&grad_dsc);
+            if(x == 0) lv_obj_add_flag(card, LV_OBJ_FLAG_FLEX_IN_NEW_TRACK);
+            fall_anim(card, 30);
+        }
+    }
+}
+  
 static void widgets_demo_cb(void)
 {
     lv_obj_t * scr = lv_screen_active();
@@ -464,23 +510,25 @@ static void widgets_demo_cb(void)
 
 static lv_demo_benchmark_scene_dsc_t scenes[] = {
     {.name = "Empty screen",               .scene_time = 3000, .create_cb = empty_screen_cb},
-    {.name = "Moving wallpaper",           .scene_time = 3000, .create_cb = moving_wallpaper_cb},
-    {.name = "Single rectangle",           .scene_time = 3000, .create_cb = single_rectangle_cb},
-    {.name = "Multiple rectangles",        .scene_time = 3000, .create_cb = multiple_rectangles_cb},
-    {.name = "Multiple RGB images",        .scene_time = 3000, .create_cb = multiple_rgb_images_cb},
-    {.name = "Multiple ARGB images",       .scene_time = 3000, .create_cb = multiple_argb_images_cb},
-    {.name = "Rotated ARGB images",        .scene_time = 3000, .create_cb = rotated_argb_image_cb},
-    {.name = "Multiple labels",            .scene_time = 3000, .create_cb = multiple_labels_cb},
-    {.name = "Screen sized text",          .scene_time = 5000, .create_cb = screen_sized_text_cb},
-    {.name = "Multiple arcs",              .scene_time = 3000, .create_cb = multiple_arcs_cb},
+    // {.name = "Moving wallpaper",           .scene_time = 3000, .create_cb = moving_wallpaper_cb},
+    // {.name = "Single rectangle",           .scene_time = 3000, .create_cb = single_rectangle_cb},
+    // {.name = "Multiple rectangles",        .scene_time = 3000, .create_cb = multiple_rectangles_cb},
+    // {.name = "Multiple RGB images",        .scene_time = 3000, .create_cb = multiple_rgb_images_cb},
+    // {.name = "Multiple ARGB images",       .scene_time = 3000, .create_cb = multiple_argb_images_cb},
+    // {.name = "Rotated ARGB images",        .scene_time = 3000, .create_cb = rotated_argb_image_cb},
+    // {.name = "Multiple labels",            .scene_time = 3000, .create_cb = multiple_labels_cb},
+    // {.name = "Screen sized text",          .scene_time = 5000, .create_cb = screen_sized_text_cb},
+    // {.name = "Multiple arcs",              .scene_time = 3000, .create_cb = multiple_arcs_cb},
 
-    {.name = "Containers",                 .scene_time = 3000, .create_cb = containers_cb},
-    {.name = "Containers with overlay",    .scene_time = 3000, .create_cb = containers_with_overlay_cb},
-    {.name = "Containers with opa",        .scene_time = 3000, .create_cb = containers_with_opa_cb},
-    {.name = "Containers with opa_layer",  .scene_time = 3000, .create_cb = containers_with_opa_layer_cb},
-    {.name = "Containers with scrolling",  .scene_time = 5000, .create_cb = containers_with_scrolling_cb},
+    // {.name = "Containers",                 .scene_time = 3000, .create_cb = containers_cb},
+    // {.name = "Containers with overlay",    .scene_time = 3000, .create_cb = containers_with_overlay_cb},
+    // {.name = "Containers with opa",        .scene_time = 3000, .create_cb = containers_with_opa_cb},
+    // {.name = "Containers with opa_layer",  .scene_time = 3000, .create_cb = containers_with_opa_layer_cb},
+    // {.name = "Containers with scrolling",  .scene_time = 5000, .create_cb = containers_with_scrolling_cb},
 
-    {.name = "Widgets demo",               .scene_time = 20000,           .create_cb = widgets_demo_cb},
+    // {.name = "Widgets demo",               .scene_time = 20000,           .create_cb = widgets_demo_cb},
+
+    {.name = "Gradients",                 .scene_time = 3000, .create_cb = gradients_cb},
 
     {.name = "", .create_cb = NULL}
 };
@@ -897,6 +945,38 @@ static lv_obj_t * card_create(void)
     lv_label_set_text_static(child, "Connect");
 
     return panel;
+}
+
+static lv_obj_t * empty_card_create(lv_grad_dsc_t * grad) {
+    lv_obj_t * panel = lv_obj_create(lv_screen_active());
+    lv_obj_set_size(panel, 270, 120);
+    lv_obj_set_style_bg_grad(panel, grad, 0);
+    return panel;
+}
+
+static void initialize_gradient(lv_grad_dsc_t * dsc, const GradientConfig * config)
+{
+    int num_stops = 2;
+    dsc->stops_count = 2;
+    dsc->stops[0].color = lv_color_hex(config->start_color);
+    dsc->stops[0].opa = config->start_opa;
+    dsc->stops[0].frac = 0;
+    dsc->stops[1].color = lv_color_hex(config->end_color);
+    dsc->stops[1].opa = config->end_opa;
+    dsc->stops[1].frac = 255;
+  
+    switch (config->direction) {
+    case LV_GRAD_DIR_NONE:
+        break;
+    case LV_GRAD_DIR_HOR:
+        lv_grad_horizontal_init(dsc);
+        break;
+    case LV_GRAD_DIR_VER:
+        lv_grad_vertical_init(dsc);
+        break;
+    default:
+        break;
+    }
 }
 
 static void rnd_reset(void)
