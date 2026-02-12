@@ -96,7 +96,7 @@ static void initialize_gradient(lv_grad_dsc_t * dsc, const GradientConfig * conf
 
 static void empty_screen_cb(void)
 {
-    color_anim(lv_screen_active());
+    // color_anim(lv_screen_active());
 }
 
 static void moving_wallpaper_cb(void)
@@ -474,11 +474,17 @@ static void gradients_cb(void)
     if(hor_cnt < 1) hor_cnt = 1;
     if(ver_cnt < 1) ver_cnt = 1;
 
-    GradientConfig grad_config = {.direction = LV_GRAD_DIR_VER,
+    GradientConfig grad_config = {
+        .direction = LV_GRAD_DIR_VER,
         .start_color = 0xCDDC39,
         .start_opa = LV_OPA_COVER,
         .end_color = 0x827717,
-        .end_opa = LV_OPA_COVER};
+        .end_opa = LV_OPA_COVER,
+        .start_x = LV_PCT(0),
+        .start_y = LV_PCT(0),
+        .end_x = LV_PCT(20),
+        .end_y = LV_PCT(100)
+    };
 
     static lv_grad_dsc_t grad_dsc = {};
     initialize_gradient(&grad_dsc, &grad_config);
@@ -509,7 +515,7 @@ static void widgets_demo_cb(void)
  **********************/
 
 static lv_demo_benchmark_scene_dsc_t scenes[] = {
-    {.name = "Empty screen",               .scene_time = 3000, .create_cb = empty_screen_cb},
+    {.name = "Empty screen",               .scene_time = 1000, .create_cb = empty_screen_cb},
     // {.name = "Moving wallpaper",           .scene_time = 3000, .create_cb = moving_wallpaper_cb},
     // {.name = "Single rectangle",           .scene_time = 3000, .create_cb = single_rectangle_cb},
     // {.name = "Multiple rectangles",        .scene_time = 3000, .create_cb = multiple_rectangles_cb},
@@ -973,6 +979,9 @@ static void initialize_gradient(lv_grad_dsc_t * dsc, const GradientConfig * conf
         break;
     case LV_GRAD_DIR_VER:
         lv_grad_vertical_init(dsc);
+        break;
+    case LV_GRAD_DIR_LINEAR:
+        lv_grad_linear_init(dsc, config->start_x, config->start_y, config->end_x, config->end_y, LV_GRAD_EXTEND_REFLECT);
         break;
     default:
         break;
