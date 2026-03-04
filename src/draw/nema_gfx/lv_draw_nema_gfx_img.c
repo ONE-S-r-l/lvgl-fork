@@ -108,11 +108,6 @@ static void _draw_nema_gfx_img(lv_draw_task_t * t, const lv_draw_image_dsc_t * d
 
     bool masked = dsc->bitmap_mask_src != NULL;
 
-    lv_area_t blend_area;
-    /*Let's get the blend area which is the intersection of the area to fill and the clip area.*/
-    if(!lv_area_intersect(&blend_area, coords, &t->clip_area))
-        return; /*Fully clipped, nothing to do*/
-
     lv_area_t rel_clip_area;
     lv_area_copy(&rel_clip_area, &t->clip_area);
     lv_area_move(&rel_clip_area, -layer->buf_area.x1, -layer->buf_area.y1);
@@ -120,11 +115,8 @@ static void _draw_nema_gfx_img(lv_draw_task_t * t, const lv_draw_image_dsc_t * d
     bool has_transform = (dsc->rotation != 0 || dsc->scale_x != LV_SCALE_NONE || dsc->scale_y != LV_SCALE_NONE);
     bool recolor = (dsc->recolor_opa > LV_OPA_MIN);
 
-    /*Make the blend area relative to the buffer*/
-    lv_area_move(&blend_area, -layer->buf_area.x1, -layer->buf_area.y1);
-
-    uint32_t tex_w = img_dsc->header.w;
-    uint32_t tex_h = img_dsc->header.h;
+    uint32_t tex_w = lv_area_get_width(coords);
+    uint32_t tex_h = lv_area_get_height(coords);
 
     nema_set_clip(rel_clip_area.x1, rel_clip_area.y1, lv_area_get_width(&rel_clip_area),
                   lv_area_get_height(&rel_clip_area));

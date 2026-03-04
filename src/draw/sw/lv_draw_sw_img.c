@@ -253,10 +253,12 @@ static void img_draw_core(lv_draw_task_t * t, const lv_draw_image_dsc_t * draw_d
     }
     else if(!transformed && !radius && cf == LV_COLOR_FORMAT_RGB565A8 && draw_dsc->recolor_opa <= LV_OPA_MIN &&
             draw_dsc->colorkey == NULL) {
+        int32_t src_h = lv_area_get_height(img_coords);
+        int32_t src_w = lv_area_get_width(img_coords);
         blend_dsc.src_area = img_coords;
         blend_dsc.src_buf = src_buf;
         blend_dsc.mask_buf = (lv_opa_t *)src_buf;
-        blend_dsc.mask_buf += img_stride * header->h;
+        blend_dsc.mask_buf += img_stride * src_w / header->w * src_h;
         /**
          * Note, for RGB565A8, lacking of stride parameter, we always use
          * always half of RGB map stride as alpha map stride. The image should
@@ -354,9 +356,10 @@ static void radius_only(lv_draw_task_t * t, const lv_draw_image_dsc_t * draw_dsc
     void * masks[2] = {0};
     masks[0] = &mask_param;
 
+    int32_t image_h = lv_area_get_height(img_coords);
     while(blend_area.y1 <= y_last) {
         if(cf_ori == LV_COLOR_FORMAT_RGB565A8) {
-            const uint8_t * mask_start = decoded->data + img_stride * decoded->header.h;
+            const uint8_t * mask_start = decoded->data + img_stride * image_h;
             int32_t y_ofs = blend_area.y1 - img_coords->y1;
             int32_t x_ofs = blend_area.x1 - img_coords->x1;
             lv_memcpy(mask_buf, mask_start + y_ofs * img_stride / 2  + x_ofs, blend_w);
@@ -399,6 +402,7 @@ static void recolor_only(lv_draw_task_t * t, const lv_draw_image_dsc_t * draw_ds
     uint32_t img_stride = decoded->header.stride;
     lv_color_format_t cf = decoded->header.cf;
     uint32_t px_size = lv_color_format_get_size(cf);
+    int32_t src_h = lv_area_get_height(img_coords);
     int32_t blend_w = lv_area_get_width(&blend_area);
     int32_t blend_h = lv_area_get_height(&blend_area);
     uint8_t * tmp_buf;
@@ -427,7 +431,7 @@ static void recolor_only(lv_draw_task_t * t, const lv_draw_image_dsc_t * draw_ds
     blend_dsc.src_color_format = cf;
     if(cf == LV_COLOR_FORMAT_RGB565A8) {
         blend_dsc.mask_area = img_coords;
-        blend_dsc.mask_buf = decoded->data + img_stride * decoded->header.h;
+        blend_dsc.mask_buf = decoded->data + img_stride * src_h;
         blend_dsc.mask_res = LV_DRAW_SW_MASK_RES_CHANGED;
         blend_dsc.src_color_format = LV_COLOR_FORMAT_RGB565;
         blend_dsc.mask_stride = img_stride / 2;
@@ -473,8 +477,8 @@ static void transform_and_recolor(lv_draw_task_t * t, const lv_draw_image_dsc_t 
     lv_area_t blend_area = *clipped_img_area;
     blend_dsc.blend_area = &blend_area;
 
-    int32_t src_w = decoded->header.w;
-    int32_t src_h = decoded->header.h;
+    int32_t src_w = lv_area_get_width(img_coords);
+    int32_t src_h = lv_area_get_height(img_coords);
     int32_t blend_w = lv_area_get_width(&blend_area);
     int32_t blend_h = lv_area_get_height(&blend_area);
 
