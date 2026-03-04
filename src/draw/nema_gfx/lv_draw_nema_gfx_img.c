@@ -123,8 +123,8 @@ static void _draw_nema_gfx_img(lv_draw_task_t * t, const lv_draw_image_dsc_t * d
     /*Make the blend area relative to the buffer*/
     lv_area_move(&blend_area, -layer->buf_area.x1, -layer->buf_area.y1);
 
-    uint32_t tex_w = lv_area_get_width(coords);
-    uint32_t tex_h = lv_area_get_height(coords);
+    uint32_t tex_w = img_dsc->header.w;
+    uint32_t tex_h = img_dsc->header.h;
 
     nema_set_clip(rel_clip_area.x1, rel_clip_area.y1, lv_area_get_width(&rel_clip_area),
                   lv_area_get_height(&rel_clip_area));
