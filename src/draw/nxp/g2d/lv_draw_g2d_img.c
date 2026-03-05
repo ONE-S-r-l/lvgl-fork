@@ -173,6 +173,7 @@ static struct g2d_buf * _g2d_handle_src_buf(const lv_draw_buf_t * img_dsc)
 {
     struct g2d_buf * src_buf = g2d_search_buf_map((void *)img_dsc->data);
     G2D_ASSERT_MSG(src_buf, "Decoded image buffer not found in G2D buf map.");
+    g2d_cache_op(src_buf, G2D_CACHE_FLUSH);
     return src_buf;
 }
 
