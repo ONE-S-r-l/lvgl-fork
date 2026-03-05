@@ -56,10 +56,14 @@ static void _invalidate_cache(const lv_draw_buf_t * draw_buf, const lv_area_t * 
 void lv_draw_buf_g2d_init_handlers(void)
 {
     lv_draw_buf_handlers_t * handlers = lv_draw_buf_get_handlers();
-
     handlers->buf_malloc_cb = _buf_malloc;
     handlers->buf_free_cb = _buf_free;
     handlers->invalidate_cache_cb = _invalidate_cache;
+
+    lv_draw_buf_handlers_t * img_handlers = lv_draw_buf_get_image_handlers();
+    img_handlers->buf_malloc_cb = _buf_malloc;
+    img_handlers->buf_free_cb = _buf_free;
+    img_handlers->invalidate_cache_cb = _invalidate_cache;
 }
 
 /**********************

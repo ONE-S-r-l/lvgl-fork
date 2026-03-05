@@ -172,15 +172,7 @@ static void _g2d_draw_core_cb(lv_draw_task_t * t, const lv_draw_image_dsc_t * dr
 static struct g2d_buf * _g2d_handle_src_buf(const lv_draw_buf_t * img_dsc)
 {
     struct g2d_buf * src_buf = g2d_search_buf_map((void *)img_dsc->data);
-
-    if(src_buf == NULL) {
-        src_buf = g2d_alloc(img_dsc->data_size, 1);
-        G2D_ASSERT_MSG(src_buf, "Failed to alloc source buffer.");
-        memcpy((uint8_t *)src_buf->buf_vaddr, img_dsc->data, img_dsc->data_size);
-        g2d_cache_op(src_buf, G2D_CACHE_FLUSH);
-        g2d_insert_buf_map((void *)img_dsc->data, src_buf);
-    }
-
+    G2D_ASSERT_MSG(src_buf, "Decoded image buffer not found in G2D buf map.");
     return src_buf;
 }
 
