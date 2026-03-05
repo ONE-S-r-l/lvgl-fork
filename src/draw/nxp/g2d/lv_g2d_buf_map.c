@@ -95,8 +95,8 @@ void g2d_insert_buf_map(void * key, struct g2d_buf * value)
     if(table->items[index] == NULL) {
         /* Key not found. Insert item. */
         table->items[index] = item;
-        LV_LOG_WARN("Add item %p, count %d", item, table->count);
         table->count++;
+        LV_LOG_WARN("Add item %p, count %d", item, table->count);
         return;
     }
     else {
@@ -153,8 +153,8 @@ void g2d_free_item(void * key)
         /* Remove the item. */
         table->items[index] = NULL;
         _map_free_item(item);
-        LV_LOG_WARN("Remove item %p, count %d", item, table->count);
         table->count--;
+        LV_LOG_WARN("Remove item %p, count %d", item, table->count);
 
         /* If there is no collision chain, just return. */
         if(list == NULL) {
@@ -179,8 +179,8 @@ void g2d_free_item(void * key)
             if(item->key == key) {
                 g2d_free(item->value);
                 lv_array_remove(list, i);
-                LV_LOG_WARN("Remove item %p, count %d", item, table->count);
                 table->count--;
+                LV_LOG_WARN("Remove item %p, count %d", item, table->count);
                 if(lv_array_size(list) == 0) {
                     _map_free_list(index, list);
                 }
@@ -235,8 +235,8 @@ static void _handle_collision(unsigned long index, lv_map_item_t * item)
         lv_array_init(list, LV_ARRAY_DEFAULT_CAPACITY, sizeof(lv_map_item_t));
         lv_array_push_back(list, item);
         table->overflow_list[index] = list;
-        LV_LOG_WARN("Add item %p, count %d", item, table->count);
         table->count++;
+        LV_LOG_WARN("Add item %p, count %d", item, table->count);
         return;
     }
     else {
@@ -251,8 +251,8 @@ static void _handle_collision(unsigned long index, lv_map_item_t * item)
         }
         /* Insert to the list. */
         lv_array_push_back(table->overflow_list[index], item);
-        LV_LOG_WARN("Add item %p, count %d", item, table->count);
         table->count++;
+        LV_LOG_WARN("Add item %p, count %d", item, table->count);
         return;
     }
 }

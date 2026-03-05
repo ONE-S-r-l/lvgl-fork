@@ -78,12 +78,14 @@ static void * _buf_malloc(size_t size_bytes, lv_color_format_t color_format)
     struct g2d_buf * buf = g2d_alloc(size_bytes, 1);
     G2D_ASSERT_MSG(buf, "Failed to alloc buffer.");
     g2d_insert_buf_map(buf->buf_vaddr, buf);
+    LV_LOG_WARN("Buffer %p allocated", buf->buf_vaddr);
     return buf->buf_vaddr;
 }
 
 static void _buf_free(void * buf)
 {
     g2d_free_item(buf);
+    LV_LOG_WARN("Buffer %p freed", buf);
 }
 
 static void _invalidate_cache(const lv_draw_buf_t * draw_buf, const lv_area_t * area)
