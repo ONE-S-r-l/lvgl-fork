@@ -286,6 +286,7 @@ void lv_draw_rect(lv_layer_t * layer, const lv_draw_rect_dsc_t * dsc, const lv_a
 
                 lv_area_t a = {0, 0, s.x - 1, s.y - 1};
                 lv_area_align(coords, &a, LV_ALIGN_CENTER, 0, 0);
+                LV_LOG_WARN("Adding label task");
                 t = lv_draw_add_task(layer, &a, LV_DRAW_TASK_TYPE_LABEL);
 
                 lv_draw_label_dsc_t * bg_label_dsc = t->draw_dsc;

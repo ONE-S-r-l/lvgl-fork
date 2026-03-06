@@ -108,6 +108,7 @@ void LV_ATTRIBUTE_FAST_MEM lv_draw_label(lv_layer_t * layer, const lv_draw_label
     }
 
     LV_PROFILER_DRAW_BEGIN;
+    LV_LOG_WARN("Adding label task");
     lv_draw_task_t * t = lv_draw_add_task(layer, coords, LV_DRAW_TASK_TYPE_LABEL);
 
     lv_memcpy(t->draw_dsc, dsc, sizeof(*dsc));
