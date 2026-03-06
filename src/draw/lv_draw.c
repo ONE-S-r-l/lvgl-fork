@@ -170,6 +170,9 @@ void lv_draw_finalize_task_creation(lv_layer_t * layer, lv_draw_task_t * t)
             t->state = LV_DRAW_TASK_STATE_FINISHED;
         }
         else {
+            if(t->preferred_draw_unit_id != 8 /* DRAW_UNIT_ID_G2D */) {
+                LV_LOG_WARN("Task of type %d will be drawn by unit %d instead of G2D", t->type, t->preferred_draw_unit_id);
+            }
             lv_draw_dispatch();
         }
     }
