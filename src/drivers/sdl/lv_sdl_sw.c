@@ -163,16 +163,18 @@ static lv_result_t resize_display(lv_display_t * display)
     }
     if(ddata->texture) SDL_DestroyTexture(ddata->texture);
 
-#if LV_COLOR_DEPTH == 32 || LV_COLOR_DEPTH == 1
-    SDL_PixelFormatEnum px_format =
-        SDL_PIXELFORMAT_RGB888; /*same as SDL_PIXELFORMAT_RGB888, but it's not supported in older versions*/
-#elif LV_COLOR_DEPTH == 24
-    SDL_PixelFormatEnum px_format = SDL_PIXELFORMAT_BGR24;
-#elif LV_COLOR_DEPTH == 16
-    SDL_PixelFormatEnum px_format = SDL_PIXELFORMAT_RGB565;
-#else
-#error("Unsupported color format")
-#endif
+    SDL_PixelFormatEnum px_format;
+    switch (cf) {
+        case LV_COLOR_FORMAT_RGB565:
+            px_format = SDL_PIXELFORMAT_RGB565;
+            break;
+        case LV_COLOR_FORMAT_RGB888:
+            px_format = SDL_PIXELFORMAT_BGR24;
+            break;
+        default:
+            px_format = SDL_PIXELFORMAT_RGB888; /*same as SDL_PIXELFORMAT_RGB888, but it's not supported in older versions*/
+            break;
+    }
 
     ddata->texture = SDL_CreateTexture(ddata->renderer, px_format,
                                        SDL_TEXTUREACCESS_STATIC, display->hor_res, display->ver_res);

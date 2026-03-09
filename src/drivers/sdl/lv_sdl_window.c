@@ -57,7 +57,7 @@ static lv_timer_t * event_handler_timer;
  *   GLOBAL FUNCTIONS
  **********************/
 
-lv_display_t * lv_sdl_window_create(int32_t hor_res, int32_t ver_res)
+lv_display_t * lv_sdl_window_create(int32_t hor_res, int32_t ver_res, lv_color_format_t color_format)
 {
     if(!inited) {
 #if LV_SDL_USE_EGL && defined(SDL_VIDEO_DRIVER_X11)
@@ -82,6 +82,7 @@ lv_display_t * lv_sdl_window_create(int32_t hor_res, int32_t ver_res)
         lv_free(dsc);
         return NULL;
     }
+    lv_display_set_color_format(disp, color_format);
     lv_display_set_driver_data(disp, dsc);
     lv_result_t res = window_create(disp);
     if(res != LV_RESULT_OK) {
@@ -272,7 +273,8 @@ static void sdl_event_handler(lv_timer_t * t)
         }
         if(event.type == SDL_QUIT) {
             SDL_Quit();
-            lv_deinit();
+            struct lv_init_config config = { .init_g2d = false };
+            lv_deinit(&config);
             inited = false;
 #if LV_SDL_DIRECT_EXIT
             exit(0);

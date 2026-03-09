@@ -264,15 +264,10 @@ void lv_obj_add_flag(lv_obj_t * obj, lv_obj_flag_t f)
     obj->flags |= f;
 
     if(f & LV_OBJ_FLAG_HIDDEN) {
-        if(lv_obj_has_state(obj, LV_STATE_FOCUSED)) {
-            lv_group_t * group = lv_obj_get_group(obj);
-            if(group != NULL) {
-                lv_group_focus_next(group);
-                lv_obj_t * next_obj = lv_group_get_focused(group);
-                if(next_obj != NULL) {
-                    lv_obj_invalidate(next_obj);
-                }
-            }
+        lv_group_t * group = lv_obj_get_group(obj);
+        if(group != NULL && lv_group_get_focused(group) == obj) {
+            // Prevent a hidden object from maintaining focus when hidden
+            lv_group_refocus(group);
         }
     }
 

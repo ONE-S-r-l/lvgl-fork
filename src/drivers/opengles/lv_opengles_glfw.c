@@ -444,7 +444,8 @@ static void lv_glfw_window_quit(void)
     lv_timer_delete(update_handler_timer);
     update_handler_timer = NULL;
 
-    lv_deinit();
+    struct lv_init_config config = { .init_g2d = false };
+    lv_deinit(&config);
 
     glfwTerminate();
     glfw_inited = false;
