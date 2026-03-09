@@ -13,6 +13,7 @@
 #include "lv_sdl_window.h"
 #if LV_USE_SDL
 #include <stdbool.h>
+#include <stdlib.h>
 #include "../../core/lv_refr.h"
 #include "../../core/lv_global.h"
 #include "../../display/lv_display_private.h"
@@ -273,8 +274,7 @@ static void sdl_event_handler(lv_timer_t * t)
         }
         if(event.type == SDL_QUIT) {
             SDL_Quit();
-            struct lv_init_config config = { .init_g2d = false };
-            lv_deinit(&config);
+            lv_deinit();
             inited = false;
 #if LV_SDL_DIRECT_EXIT
             exit(0);

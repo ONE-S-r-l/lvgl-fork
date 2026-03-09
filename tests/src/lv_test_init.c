@@ -43,8 +43,7 @@ void lv_test_deinit(void)
     lv_test_indev_gesture_delete();
 #endif
     lv_test_indev_delete_all();
-    struct lv_init_config config = { .init_g2d = false };
-    lv_deinit(&config);
+    lv_deinit();
 }
 
 static void test_log_print_cb(lv_log_level_t level, const char * buf)

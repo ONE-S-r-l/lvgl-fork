@@ -41,7 +41,7 @@ void lv_init(const struct lv_init_config *config);
 /**
  * Deinit the 'lv' library
  */
-void lv_deinit(const struct lv_init_config *config);
+void lv_deinit();
 
 /**
  * Returns whether the 'lv' library is currently initialized

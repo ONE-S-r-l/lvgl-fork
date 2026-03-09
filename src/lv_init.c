@@ -96,6 +96,7 @@
  *********************/
 #define lv_initialized  LV_GLOBAL_DEFAULT()->inited
 #define lv_deinit_in_progress  LV_GLOBAL_DEFAULT()->deinit_in_progress
+#define lv_init_g2d  LV_GLOBAL_DEFAULT()->init_g2d
 
 /**********************
  *      TYPEDEFS
@@ -249,7 +250,8 @@ void lv_init(const struct lv_init_config *config)
 
 #if LV_USE_G2D
 #if LV_USE_DRAW_G2D || LV_USE_ROTATE_G2D
-    if (config->init_g2d) {
+    lv_init_g2d = config->init_g2d;
+    if (lv_init_g2d) {
         lv_draw_g2d_init();
     }
 #endif
@@ -422,7 +424,7 @@ void lv_init(const struct lv_init_config *config)
     LV_LOG_TRACE("finished");
 }
 
-void lv_deinit(const struct lv_init_config *config)
+void lv_deinit()
 {
     /*Do nothing if already deinit*/
     if(!lv_initialized) {
@@ -487,7 +489,7 @@ void lv_deinit(const struct lv_init_config *config)
 #endif
 #if LV_USE_G2D
 #if LV_USE_DRAW_G2D || LV_USE_ROTATE_G2D
-    if (config->init_g2d) {
+    if (lv_init_g2d) {
         lv_draw_g2d_deinit();
     }
 #endif
