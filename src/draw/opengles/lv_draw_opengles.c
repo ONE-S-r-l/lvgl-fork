@@ -77,7 +77,7 @@ static int32_t dispatch(lv_draw_unit_t * draw_unit, lv_layer_t * layer);
 
 static int32_t evaluate(lv_draw_unit_t * draw_unit, lv_draw_task_t * task);
 static unsigned int draw_to_texture(lv_draw_opengles_unit_t * u, cache_data_t * cache_data);
-static void draw_texture_to_framebuffer(lv_draw_opengles_unit_t * u, unsigned int texture);
+static void draw_texture_to_framebuffer(lv_draw_opengles_unit_t * u, unsigned int texture, lv_opa_t opa);
 static void draw_to_framebuffer(lv_draw_opengles_unit_t * u);
 
 static unsigned int layer_get_texture(lv_layer_t * layer);
@@ -330,6 +330,67 @@ static int32_t evaluate(lv_draw_unit_t * draw_unit, lv_draw_task_t * task)
     return 0;
 }
 
+static lv_opa_t replace_opa_in_task(const lv_draw_task_t * task, lv_opa_t opa)
+{
+    LV_ASSERT_NULL(task);
+
+	switch(task->type) {
+        case LV_DRAW_TASK_TYPE_FILL: {
+            lv_draw_fill_dsc_t * fill_dsc = (lv_draw_fill_dsc_t *)task->draw_dsc;
+			lv_opa_t old_opa = fill_dsc->opa;
+            fill_dsc->opa = opa;
+            return old_opa;
+		}
+		case LV_DRAW_TASK_TYPE_BORDER: {
+            lv_draw_border_dsc_t * border_dsc = (lv_draw_border_dsc_t *)task->draw_dsc;
+			lv_opa_t old_opa = border_dsc->opa;
+            border_dsc->opa = opa;
+            return old_opa;
+		}
+        case LV_DRAW_TASK_TYPE_BOX_SHADOW: {
+            lv_draw_box_shadow_dsc_t * box_shadow_dsc = (lv_draw_box_shadow_dsc_t *)task->draw_dsc;
+			lv_opa_t old_opa = box_shadow_dsc->opa;
+            box_shadow_dsc->opa = opa;
+            return old_opa;
+        }
+        case LV_DRAW_TASK_TYPE_LABEL: {
+            lv_draw_label_dsc_t * label_dsc = (lv_draw_label_dsc_t *)task->draw_dsc;
+			lv_opa_t old_opa = label_dsc->opa;
+            label_dsc->opa = opa;
+            return old_opa;
+        }
+        case LV_DRAW_TASK_TYPE_ARC: {
+            lv_draw_arc_dsc_t * arc_dsc = (lv_draw_arc_dsc_t *)task->draw_dsc;
+			lv_opa_t old_opa = arc_dsc->opa;
+            arc_dsc->opa = opa;
+            return old_opa;
+        }
+        case LV_DRAW_TASK_TYPE_LINE: {
+            lv_draw_line_dsc_t * line_dsc = (lv_draw_line_dsc_t *)task->draw_dsc;
+			lv_opa_t old_opa = line_dsc->opa;
+            line_dsc->opa = opa;
+            return old_opa;
+        }
+        case LV_DRAW_TASK_TYPE_TRIANGLE: {
+            lv_draw_triangle_dsc_t * triangle_dsc = (lv_draw_triangle_dsc_t *)task->draw_dsc;
+			lv_opa_t old_opa = triangle_dsc->opa;
+            triangle_dsc->opa = opa;
+            return old_opa;
+        }
+        case LV_DRAW_TASK_TYPE_IMAGE: {
+            lv_draw_image_dsc_t * image_dsc = (lv_draw_image_dsc_t *)task->draw_dsc;
+			lv_opa_t old_opa = image_dsc->opa;
+            image_dsc->opa = opa;
+            return old_opa;
+        }
+        default: {
+            LV_LOG_ERROR("Unsupported draw task type: %d", task->type);
+            LV_ASSERT(false);
+            return LV_OPA_COVER;
+        }
+    }
+}
+
 static unsigned int draw_to_texture(lv_draw_opengles_unit_t * u, cache_data_t * cache_data)
 {
     LV_PROFILER_DRAW_BEGIN;
@@ -554,7 +615,7 @@ static void blend_texture_layer(lv_draw_task_t * t)
     LV_PROFILER_DRAW_END;
 }
 
-static void draw_texture_to_framebuffer(lv_draw_opengles_unit_t * u, unsigned int texture)
+static void draw_texture_to_framebuffer(lv_draw_opengles_unit_t * u, unsigned int texture, lv_opa_t opa)
 {
     lv_draw_task_t * t = u->task_act;
 
@@ -583,7 +644,17 @@ static void draw_texture_to_framebuffer(lv_draw_opengles_unit_t * u, unsigned in
     lv_area_move(&t->clip_area, -dest_layer->buf_area.x1, -dest_layer->buf_area.y1);
     lv_area_t render_area = t->_real_area;
     lv_area_move(&render_area, -dest_layer->buf_area.x1, -dest_layer->buf_area.y1);
-    lv_opengles_render_texture(texture, &render_area, 0xff, targ_tex_w, targ_tex_h, &t->clip_area, h_flip, v_flip);
+
+    if(opa != LV_OPA_COVER) {
+        GL_CALL(glEnable(GL_BLEND));
+        GL_CALL(glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA));
+    }
+
+    lv_opengles_render_texture(texture, &render_area, opa, targ_tex_w, targ_tex_h, &t->clip_area, h_flip, v_flip);
+
+    if(opa != LV_OPA_COVER) {
+        GL_CALL(glDisable(GL_BLEND));
+    }
 
     if(target_texture) {
         GL_CALL(glBindFramebuffer(GL_FRAMEBUFFER, 0));
@@ -597,7 +668,7 @@ static void draw_to_framebuffer(lv_draw_opengles_unit_t * u)
         /*Texture creation failed; nothing to render to the framebuffer.*/
         return;
     }
-    draw_texture_to_framebuffer(u, texture);
+    draw_texture_to_framebuffer(u, texture, LV_OPA_COVER);
     GL_CALL(glDeleteTextures(1, &texture));
 }
 
@@ -657,11 +728,13 @@ static void draw_from_cached_texture(lv_draw_task_t * t)
 
     lv_area_move(&t->area, -a.x1, -a.y1);
     lv_area_move(&t->_real_area, -a.x1, -a.y1);
+    lv_opa_t orig_opa = replace_opa_in_task(t, LV_OPA_COVER);
 
     lv_cache_entry_t * entry_cached = lv_cache_acquire_or_create(u->texture_cache, &data_to_find, u);
 
     lv_area_move(&t->area, a.x1, a.y1);
     lv_area_move(&t->_real_area, a.x1, a.y1);
+    replace_opa_in_task(t, orig_opa);
 
     if(!entry_cached) {
         LV_PROFILER_DRAW_END;
@@ -672,7 +745,7 @@ static void draw_from_cached_texture(lv_draw_task_t * t)
 
     cache_data_t * data_cached = lv_cache_entry_get_data(entry_cached);
     unsigned int texture = data_cached->texture;
-    draw_texture_to_framebuffer(u, texture);
+    draw_texture_to_framebuffer(u, texture, orig_opa);
 
     lv_cache_release(u->texture_cache, entry_cached, u);
 
