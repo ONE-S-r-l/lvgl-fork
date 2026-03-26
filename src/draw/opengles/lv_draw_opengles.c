@@ -49,6 +49,7 @@ typedef struct {
     lv_cache_t * texture_cache;
     unsigned int framebuffer;
     lv_draw_buf_t render_draw_buf;
+    int max_texture_size;
 } lv_draw_opengles_unit_t;
 
 typedef struct {
@@ -76,8 +77,9 @@ static void execute_drawing(lv_draw_opengles_unit_t * u);
 static int32_t dispatch(lv_draw_unit_t * draw_unit, lv_layer_t * layer);
 
 static int32_t evaluate(lv_draw_unit_t * draw_unit, lv_draw_task_t * task);
-static unsigned int draw_to_texture(lv_draw_opengles_unit_t * u, cache_data_t * cache_data);
-static void draw_texture_to_framebuffer(lv_draw_opengles_unit_t * u, unsigned int texture, lv_opa_t opa);
+static unsigned int draw_to_texture(lv_draw_opengles_unit_t * u, cache_data_t * cache_data, lv_area_t * out_effective_area);
+static void draw_texture_to_framebuffer(lv_draw_opengles_unit_t * u, unsigned int texture, lv_opa_t opa,
+                                        const lv_area_t * effective_area);
 static void draw_to_framebuffer(lv_draw_opengles_unit_t * u);
 
 static unsigned int layer_get_texture(lv_layer_t * layer);
@@ -139,7 +141,7 @@ void lv_draw_opengles_deinit(void)
 static bool opengles_texture_cache_create_cb(cache_data_t * cached_data, void * user_data)
 {
     LV_PROFILER_DRAW_BEGIN;
-    bool ret = draw_to_texture((lv_draw_opengles_unit_t *)user_data, cached_data) != 0;
+    bool ret = draw_to_texture((lv_draw_opengles_unit_t *)user_data, cached_data, NULL) != 0;
     LV_PROFILER_DRAW_END;
     return ret;
 }
@@ -391,7 +393,7 @@ static lv_opa_t replace_opa_in_task(const lv_draw_task_t * task, lv_opa_t opa)
     }
 }
 
-static unsigned int draw_to_texture(lv_draw_opengles_unit_t * u, cache_data_t * cache_data)
+static unsigned int draw_to_texture(lv_draw_opengles_unit_t * u, cache_data_t * cache_data, lv_area_t * out_effective_area)
 {
     LV_PROFILER_DRAW_BEGIN;
     lv_draw_task_t * task = u->task_act;
@@ -399,8 +401,18 @@ static unsigned int draw_to_texture(lv_draw_opengles_unit_t * u, cache_data_t * 
     lv_layer_t dest_layer;
     lv_layer_init(&dest_layer);
 
-    int32_t texture_w = lv_area_get_width(&task->_real_area);
-    int32_t texture_h = lv_area_get_height(&task->_real_area);
+    lv_area_t effective_area;
+    if(cache_data != NULL)
+        effective_area = task->_real_area;
+    else
+        lv_area_intersect(&effective_area, &task->_real_area, &task->clip_area);
+
+    int32_t texture_w = lv_area_get_width(&effective_area);
+    int32_t texture_h = lv_area_get_height(&effective_area);
+    if (texture_w <= 0 || texture_h <= 0) {
+        // Nothing to draw
+        return 0;
+    }
 
     if(NULL == lv_draw_buf_reshape(&u->render_draw_buf, LV_COLOR_FORMAT_ARGB8888, texture_w, texture_h, LV_STRIDE_AUTO)) {
         uint8_t * data = u->render_draw_buf.unaligned_data;
@@ -415,10 +427,10 @@ static unsigned int draw_to_texture(lv_draw_opengles_unit_t * u, cache_data_t * 
     dest_layer.draw_buf = &u->render_draw_buf;
     dest_layer.color_format = LV_COLOR_FORMAT_ARGB8888;
 
-    dest_layer.buf_area = task->_real_area;
-    dest_layer._clip_area = task->_real_area;
-    dest_layer.phy_clip_area = task->_real_area;
-    lv_memzero(u->render_draw_buf.data, lv_area_get_size(&task->_real_area) * 4);
+    dest_layer.buf_area = effective_area;
+    dest_layer._clip_area = effective_area;
+    dest_layer.phy_clip_area = effective_area;
+    lv_memzero(u->render_draw_buf.data, lv_area_get_size(&effective_area) * 4);
 
     lv_display_t * disp = lv_refr_get_disp_refreshing();
 
@@ -559,6 +571,10 @@ static unsigned int draw_to_texture(lv_draw_opengles_unit_t * u, cache_data_t * 
         lv_obj_set_flag(obj, LV_OBJ_FLAG_SEND_DRAW_TASK_EVENTS, original_send_draw_task_event);
     }
 
+    if(out_effective_area != NULL) {
+        *out_effective_area = effective_area;
+    }
+
     LV_PROFILER_DRAW_END;
     return texture;
 }
@@ -615,7 +631,8 @@ static void blend_texture_layer(lv_draw_task_t * t)
     LV_PROFILER_DRAW_END;
 }
 
-static void draw_texture_to_framebuffer(lv_draw_opengles_unit_t * u, unsigned int texture, lv_opa_t opa)
+static void draw_texture_to_framebuffer(lv_draw_opengles_unit_t * u, unsigned int texture, lv_opa_t opa,
+                                        const lv_area_t * effective_area)
 {
     lv_draw_task_t * t = u->task_act;
 
@@ -642,7 +659,9 @@ static void draw_texture_to_framebuffer(lv_draw_opengles_unit_t * u, unsigned in
 
     lv_opengles_viewport(0, 0, targ_tex_w, targ_tex_h);
     lv_area_move(&t->clip_area, -dest_layer->buf_area.x1, -dest_layer->buf_area.y1);
-    lv_area_t render_area = t->_real_area;
+    /*Use the effective area (which may be smaller than _real_area when oversized)
+     *to avoid stretching the texture over the full real area.*/
+    lv_area_t render_area = *effective_area;
     lv_area_move(&render_area, -dest_layer->buf_area.x1, -dest_layer->buf_area.y1);
 
     if(opa != LV_OPA_COVER) {
@@ -663,12 +682,13 @@ static void draw_texture_to_framebuffer(lv_draw_opengles_unit_t * u, unsigned in
 
 static void draw_to_framebuffer(lv_draw_opengles_unit_t * u)
 {
-    unsigned int texture = draw_to_texture(u, NULL);
+    lv_area_t effective_area;
+    unsigned int texture = draw_to_texture(u, NULL, &effective_area);
     if(texture == 0) {
         /*Texture creation failed; nothing to render to the framebuffer.*/
         return;
     }
-    draw_texture_to_framebuffer(u, texture, LV_OPA_COVER);
+    draw_texture_to_framebuffer(u, texture, LV_OPA_COVER, &effective_area);
     GL_CALL(glDeleteTextures(1, &texture));
 }
 
@@ -745,7 +765,7 @@ static void draw_from_cached_texture(lv_draw_task_t * t)
 
     cache_data_t * data_cached = lv_cache_entry_get_data(entry_cached);
     unsigned int texture = data_cached->texture;
-    draw_texture_to_framebuffer(u, texture, orig_opa);
+    draw_texture_to_framebuffer(u, texture, orig_opa, &t->_real_area);
 
     lv_cache_release(u->texture_cache, entry_cached, u);
 
@@ -756,6 +776,10 @@ static void execute_drawing(lv_draw_opengles_unit_t * u)
 {
     lv_draw_task_t * t = u->task_act;
     t->draw_unit = (lv_draw_unit_t *)u;
+
+    if(u->max_texture_size == 0) {
+        GL_CALL(glGetIntegerv(GL_MAX_TEXTURE_SIZE, &u->max_texture_size));
+    }
 
     /* the shader-based fill is not working reliably with EGL. */
     switch(t->type) {
@@ -843,6 +867,14 @@ static void execute_drawing(lv_draw_opengles_unit_t * u)
 #endif
         default:
             break;
+    }
+
+    /*Tasks whose real area exceeds the GL texture size limit cannot be stored in a
+     *single texture. Skip the cache and render directly using the clipped area.*/
+    if(lv_area_get_width(&t->_real_area) > u->max_texture_size ||
+       lv_area_get_height(&t->_real_area) > u->max_texture_size) {
+        draw_to_framebuffer(u);
+        return;
     }
 
     draw_from_cached_texture(t);
