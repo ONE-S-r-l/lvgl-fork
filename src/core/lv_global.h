@@ -277,10 +277,6 @@ typedef struct _lv_global_t {
 #if LV_USE_DRAW_EVE
     lv_draw_eve_unit_t * draw_eve_unit;
 #endif
-
-#if LV_USE_G2D
-    bool init_g2d;
-#endif
 } lv_global_t;
 
 /**********************

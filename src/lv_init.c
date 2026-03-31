@@ -56,9 +56,7 @@
     #endif
 #endif
 #if LV_USE_G2D
-    #if LV_USE_DRAW_G2D || LV_USE_ROTATE_G2D
-        #include "draw/nxp/g2d/lv_draw_g2d.h"
-    #endif
+    #include "draw/nxp/g2d/lv_draw_g2d.h"
 #endif
 #if LV_USE_DRAW_DAVE2D
     #include "draw/renesas/dave2d/lv_draw_dave2d.h"
@@ -96,7 +94,6 @@
  *********************/
 #define lv_initialized  LV_GLOBAL_DEFAULT()->inited
 #define lv_deinit_in_progress  LV_GLOBAL_DEFAULT()->deinit_in_progress
-#define lv_init_g2d  LV_GLOBAL_DEFAULT()->init_g2d
 
 /**********************
  *      TYPEDEFS
@@ -177,7 +174,7 @@ bool lv_is_initialized(void)
 #endif
 }
 
-void lv_init(const struct lv_init_config *config)
+void lv_init(void)
 {
     /*First initialize Garbage Collection if needed*/
 #ifdef LV_GC_INIT
@@ -248,14 +245,9 @@ void lv_init(const struct lv_init_config *config)
 #endif
 #endif
 
-#if LV_USE_G2D
-#if LV_USE_DRAW_G2D || LV_USE_ROTATE_G2D
-    lv_init_g2d = config->init_g2d;
-    if (lv_init_g2d) {
-        lv_draw_g2d_init();
-    }
-#endif
-#endif
+// #if LV_USE_G2D
+//     lv_draw_g2d_init();
+// #endif
 
 #if LV_USE_DRAW_DAVE2D
     lv_draw_dave2d_init();
@@ -269,9 +261,9 @@ void lv_init(const struct lv_init_config *config)
     lv_draw_dma2d_init();
 #endif
 
-#if LV_USE_DRAW_OPENGLES
-    lv_draw_opengles_init();
-#endif
+// #if LV_USE_DRAW_OPENGLES
+//     lv_draw_opengles_init();
+// #endif
 
 #if LV_USE_PPA
     lv_draw_ppa_init();
@@ -424,7 +416,7 @@ void lv_init(const struct lv_init_config *config)
     LV_LOG_TRACE("finished");
 }
 
-void lv_deinit()
+void lv_deinit(void)
 {
     /*Do nothing if already deinit*/
     if(!lv_initialized) {
@@ -487,12 +479,9 @@ void lv_deinit()
 #if LV_USE_WAYLAND
     lv_wayland_deinit();
 #endif
+
 #if LV_USE_G2D
-#if LV_USE_DRAW_G2D || LV_USE_ROTATE_G2D
-    if (lv_init_g2d) {
-        lv_draw_g2d_deinit();
-    }
-#endif
+    lv_draw_g2d_deinit();
 #endif
 
 #if LV_USE_DRAW_VG_LITE

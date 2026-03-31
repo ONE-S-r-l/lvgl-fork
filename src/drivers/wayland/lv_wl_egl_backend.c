@@ -68,7 +68,7 @@ static const struct wl_callback_listener frame_listener = {
     .done = frame_done,
 };
 
-const lv_wayland_backend_ops_t wl_backend_ops = {
+static const lv_wayland_backend_ops_t wl_egl_backend_ops = {
     .init = wl_egl_init,
     .deinit = wl_egl_deinit,
     .global_handler = wl_egl_global_handler,
@@ -85,6 +85,11 @@ const lv_wayland_backend_ops_t wl_backend_ops = {
  *   GLOBAL FUNCTIONS
  **********************/
 
+void lv_wayland_set_egl_backend_ops()
+{
+    wl_backend_ops = &wl_egl_backend_ops;
+}
+
 /**********************
  *   STATIC FUNCTIONS
  **********************/
@@ -99,7 +104,7 @@ static void frame_done(void * data, struct wl_callback * callback, uint32_t time
 
 static void * wl_egl_init(void)
 {
-    return NULL;
+    return (void *)1;
 }
 
 static void wl_egl_deinit(void * backend_ctx)

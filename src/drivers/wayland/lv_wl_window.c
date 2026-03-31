@@ -90,7 +90,11 @@ lv_display_t * lv_wayland_window_create(uint32_t hor_res, uint32_t ver_res, char
     lv_display_set_driver_data(window->lv_disp, window);
 
     /* Initialize display driver */
-    window->backend_display_data = wl_backend_ops.init_display(lv_wl_ctx.backend_data, window->lv_disp, hor_res, ver_res);
+    window->backend_display_data = wl_backend_ops->init_display(lv_wl_ctx.backend_data, window->lv_disp, hor_res, ver_res);
+    if(!window->backend_display_data) {
+        LV_LOG_ERROR("Failed to initialize display");
+        goto create_window_err;
+    }
 
     lv_wayland_xdg_configure_surface(window);
 
@@ -137,6 +141,7 @@ create_display_error:
     lv_ll_remove(&lv_wl_ctx.window_ll, window);
     lv_free(window);
 alloc_window_err:
+    lv_wayland_deinit();
     return NULL;
 }
 
@@ -289,7 +294,7 @@ void lv_wayland_window_delete(lv_wl_window_t * window)
     /* Make sure buffer is correctly released*/
     wl_display_roundtrip(lv_wl_ctx.wl_display);
 
-    wl_backend_ops.deinit_display(window->backend_display_data, window->lv_disp);
+    wl_backend_ops->deinit_display(window->backend_display_data, window->lv_disp);
     window->backend_display_data = NULL;
 
     /* Set the driver data to NULL before calling display delete
@@ -338,7 +343,7 @@ static void res_changed_event(lv_event_t * e)
 {
     lv_display_t * display = (lv_display_t *) lv_event_get_target(e);
     lv_wl_window_t * window = lv_display_get_driver_data(display);
-    window->backend_display_data = wl_backend_ops.resize_display(lv_wl_ctx.backend_data, display);
+    window->backend_display_data = wl_backend_ops->resize_display(lv_wl_ctx.backend_data, display);
 }
 
 #endif /* LV_USE_WAYLAND */

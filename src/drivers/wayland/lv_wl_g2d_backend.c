@@ -56,6 +56,7 @@ typedef struct {
 
 typedef struct {
     struct zwp_linux_dmabuf_v1 * handler;
+    struct zwp_linux_dmabuf_feedback_v1 * feedback;
     /* XRBG888 and ARGB8888 are always supported*/
     bool supports_rgb565;
 } lv_wl_g2d_ctx_t;
@@ -121,7 +122,7 @@ static lv_wl_buffer_t * get_next_buffer(lv_wl_g2d_display_data_t * ddata);
 
 static lv_wl_g2d_ctx_t ctx;
 
-const lv_wayland_backend_ops_t wl_backend_ops = {
+static const lv_wayland_backend_ops_t wl_g2d_backend_ops = {
     .init = wl_g2d_init,
     .deinit = wl_g2d_deinit,
     .global_handler = wl_g2d_global_handler,
@@ -170,6 +171,11 @@ static const struct wl_callback_listener frame_listener = {
  *   GLOBAL FUNCTIONS
  **********************/
 
+void lv_wayland_set_g2d_backend_ops()
+{
+    wl_backend_ops = &wl_g2d_backend_ops;
+}
+
 /**********************
  *   STATIC FUNCTIONS
  **********************/
@@ -187,8 +193,13 @@ static void wl_g2d_deinit(void * backend_ctx)
     if(!ctx) {
         return;
     }
+    if(ctx->feedback) {
+        zwp_linux_dmabuf_feedback_v1_destroy(ctx->feedback);
+        ctx->feedback = NULL;
+    }
     if(ctx->handler) {
         zwp_linux_dmabuf_v1_destroy(ctx->handler);
+        ctx->handler = NULL;
     }
 }
 
@@ -204,8 +215,8 @@ static void wl_g2d_global_handler(void * backend_ctx, struct wl_registry * regis
         ctx->handler = wl_registry_bind(registry, name, &zwp_linux_dmabuf_v1_interface, version);
 
         if(version >= 4) {
-            struct zwp_linux_dmabuf_feedback_v1 * feedback = zwp_linux_dmabuf_v1_get_default_feedback(ctx->handler);
-            zwp_linux_dmabuf_feedback_v1_add_listener(feedback, &dmabuf_listener_v5, ctx);
+            ctx->feedback = zwp_linux_dmabuf_v1_get_default_feedback(ctx->handler);
+            zwp_linux_dmabuf_feedback_v1_add_listener(ctx->feedback, &dmabuf_listener_v5, ctx);
         }
         else if(version < 3) {
             zwp_linux_dmabuf_v1_add_listener(ctx->handler, &dmabuf_listener, ctx);
