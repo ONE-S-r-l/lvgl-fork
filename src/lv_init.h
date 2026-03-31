@@ -24,10 +24,6 @@ extern "C" {
  *      TYPEDEFS
  **********************/
 
- struct lv_init_config {
-    bool init_g2d;
- };
-
 /**********************
  * GLOBAL PROTOTYPES
  **********************/
@@ -36,12 +32,12 @@ extern "C" {
  * Initialize LVGL library.
  * Should be called before any other LVGL related function.
  */
-void lv_init(const struct lv_init_config *config);
+void lv_init(void);
 
 /**
  * Deinit the 'lv' library
  */
-void lv_deinit();
+void lv_deinit(void);
 
 /**
  * Returns whether the 'lv' library is currently initialized

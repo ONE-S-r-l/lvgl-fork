@@ -74,6 +74,7 @@ static void draw_from_cached_texture(lv_draw_task_t * t);
 
 static void execute_drawing(lv_draw_opengles_unit_t * u);
 
+static int32_t delete(lv_draw_unit_t * draw_unit);
 static int32_t dispatch(lv_draw_unit_t * draw_unit, lv_layer_t * layer);
 
 static int32_t evaluate(lv_draw_unit_t * draw_unit, lv_draw_task_t * task);
@@ -106,9 +107,12 @@ static lv_draw_opengles_unit_t * g_unit;
 
 void lv_draw_opengles_init(void)
 {
+    if(g_unit) return;
+
     lv_draw_opengles_unit_t * draw_opengles_unit = lv_draw_create_unit(sizeof(lv_draw_opengles_unit_t));
     draw_opengles_unit->base_unit.dispatch_cb = dispatch;
     draw_opengles_unit->base_unit.evaluate_cb = evaluate;
+    draw_opengles_unit->base_unit.delete_cb = delete;
     draw_opengles_unit->base_unit.name = "OPENGLES";
     draw_opengles_unit->texture_cache = lv_cache_create(&lv_cache_class_lru_rb_count,
     sizeof(cache_data_t), LV_DRAW_OPENGLES_TEXTURE_CACHE_COUNT, (lv_cache_ops_t) {
@@ -125,12 +129,9 @@ void lv_draw_opengles_init(void)
 
 void lv_draw_opengles_deinit(void)
 {
-    lv_free(g_unit->render_draw_buf.unaligned_data);
-    lv_cache_destroy(g_unit->texture_cache, g_unit);
-    if(g_unit->framebuffer != 0) {
-        GL_CALL(glBindFramebuffer(GL_FRAMEBUFFER, 0));
-        GL_CALL(glDeleteFramebuffers(1, &g_unit->framebuffer));
-    }
+    if(!g_unit) return;
+
+    lv_draw_remove_unit((lv_draw_unit_t *)g_unit);
     g_unit = NULL;
 }
 
@@ -257,6 +258,23 @@ static lv_cache_compare_res_t compare_image_dsc(const lv_draw_image_dsc_t * lhs,
     }
 
     return 0;
+}
+
+static int32_t delete(lv_draw_unit_t * draw_unit)
+{
+    lv_draw_opengles_unit_t * draw_opengles_unit = (lv_draw_opengles_unit_t *) draw_unit;
+    lv_free(draw_opengles_unit->render_draw_buf.unaligned_data);
+    lv_cache_destroy(draw_opengles_unit->texture_cache, draw_opengles_unit);
+    if(draw_opengles_unit->framebuffer != 0) {
+        GL_CALL(glBindFramebuffer(GL_FRAMEBUFFER, 0));
+        GL_CALL(glDeleteFramebuffers(1, &draw_opengles_unit->framebuffer));
+    }
+
+    if(draw_opengles_unit == g_unit) {
+        g_unit = NULL;
+    }
+
+    return LV_RESULT_OK;
 }
 
 static int32_t dispatch(lv_draw_unit_t * draw_unit, lv_layer_t * layer)

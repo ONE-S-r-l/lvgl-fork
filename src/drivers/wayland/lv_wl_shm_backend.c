@@ -87,7 +87,7 @@ static const struct wl_buffer_listener buffer_listener = {
     .release = buffer_release
 };
 
-const lv_wayland_backend_ops_t wl_backend_ops = {
+static const lv_wayland_backend_ops_t wl_shm_backend_ops = {
     .init = shm_init,
     .deinit = shm_deinit,
     .global_handler = shm_global_handler,
@@ -104,6 +104,11 @@ const lv_wayland_backend_ops_t wl_backend_ops = {
 /**********************
  *   GLOBAL FUNCTIONS
  **********************/
+
+void lv_wayland_set_shm_backend_ops()
+{
+    wl_backend_ops = &wl_shm_backend_ops;
+}
 
 /**********************
  *   STATIC FUNCTIONS

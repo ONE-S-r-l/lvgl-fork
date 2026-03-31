@@ -71,7 +71,12 @@ static void _g2d_execute_drawing(lv_draw_task_t * t);
  *  STATIC VARIABLES
  **********************/
 
+static bool is_initialized = false;
 static int32_t is_hw_pxp = 0;
+
+#if LV_USE_DRAW_G2D
+static lv_draw_g2d_unit_t * g_unit = NULL;
+#endif
 
 /**********************
  *      MACROS
@@ -83,7 +88,17 @@ static int32_t is_hw_pxp = 0;
 
 void lv_draw_g2d_init(void)
 {
+    if(is_initialized) return;
+
     lv_draw_buf_g2d_init_handlers();
+
+    g2d_create_buf_map();
+
+    void * handle;
+    LV_ASSERT_MSG(!g2d_open(&handle), "Cannot open G2D handle\r\n");
+    g2d_query_hardware(handle, G2D_HARDWARE_PXP_V1, &is_hw_pxp);
+    g2d_set_handle(handle);
+
 #if LV_USE_DRAW_G2D
     lv_draw_g2d_unit_t * draw_g2d_unit = lv_draw_create_unit(sizeof(lv_draw_g2d_unit_t));
     draw_g2d_unit->base_unit.evaluate_cb = _g2d_evaluate;
@@ -98,17 +113,30 @@ void lv_draw_g2d_init(void)
     lv_thread_init(&thread_dsc->thread, "g2ddraw", LV_DRAW_THREAD_PRIO, _g2d_render_thread_cb, LV_DRAW_THREAD_STACK_SIZE,
                    thread_dsc);
 #endif
+
+    g_unit = draw_g2d_unit;
 #endif
-    g2d_create_buf_map();
-    void * handle;
-    LV_ASSERT_MSG(!g2d_open(&handle), "Cannot open G2D handle\r\n");
-    g2d_query_hardware(handle, G2D_HARDWARE_PXP_V1, &is_hw_pxp);
-    g2d_set_handle(handle);
+
+    is_initialized = true;
 }
 
 void lv_draw_g2d_deinit(void)
 {
+    if(!is_initialized) return;
+
+#if LV_USE_DRAW_G2D 
+    if(g_unit) {
+        lv_draw_remove_unit((lv_draw_unit_t *)g_unit);
+        g_unit = NULL;
+    }
+#endif
+
+    g2d_close(g2d_get_handle());
+    g2d_set_handle(NULL);
     g2d_free_buf_map();
+    lv_draw_buf_g2d_deinit_handlers();
+
+    is_initialized = false;
 }
 
 /**********************
@@ -276,10 +304,10 @@ static int32_t _g2d_delete(lv_draw_unit_t * draw_unit)
 {
     lv_result_t res = LV_RESULT_OK;
 
-#if !LV_USE_G2D_DRAW_THREAD
-    LV_UNUSED(draw_unit);
-#else
+#if LV_USE_DRAW_G2D
     lv_draw_g2d_unit_t * draw_g2d_unit = (lv_draw_g2d_unit_t *) draw_unit;
+
+#if LV_USE_G2D_DRAW_THREAD
     lv_draw_sw_thread_dsc_t * thread_dsc = &draw_g2d_unit->thread_dsc;
     LV_LOG_INFO("Cancel G2D draw thread.");
     thread_dsc->exit_status = true;
@@ -289,7 +317,11 @@ static int32_t _g2d_delete(lv_draw_unit_t * draw_unit)
 
     res = lv_thread_delete(&thread_dsc->thread);
 #endif
-    g2d_close(g2d_get_handle());
+
+    if(draw_g2d_unit == g_unit) {
+        g_unit = NULL;
+    }
+#endif
 
     return res;
 }

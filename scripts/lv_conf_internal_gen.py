@@ -234,17 +234,11 @@ LV_EXPORT_CONST_INT(LV_DRAW_BUF_ALIGN);
     /*Automatically detect wayland backend*/
     #if LV_USE_OPENGLES
         #define LV_WAYLAND_USE_EGL 1
-        #define LV_WAYLAND_USE_G2D 0
-        #define LV_WAYLAND_USE_SHM 0
-    #elif LV_USE_G2D
-        #define LV_WAYLAND_USE_EGL 0
-        #define LV_WAYLAND_USE_G2D 1
-        #define LV_WAYLAND_USE_SHM 0
-    #else
-        #define LV_WAYLAND_USE_EGL 0
-        #define LV_WAYLAND_USE_G2D 0
-        #define LV_WAYLAND_USE_SHM 1
     #endif
+    #if LV_USE_G2D
+        #define LV_WAYLAND_USE_G2D 1
+    #endif
+    #define LV_WAYLAND_USE_SHM 1
 #else
     #define LV_WAYLAND_USE_G2D 0
     #define LV_WAYLAND_USE_SHM 0

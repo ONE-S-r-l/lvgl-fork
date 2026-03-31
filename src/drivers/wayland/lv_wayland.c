@@ -77,6 +77,7 @@ static void output_geometry(void * data, struct wl_output * output, int32_t x, i
 
 static bool is_wayland_initialized = false;
 lv_wl_ctx_t lv_wl_ctx;
+const lv_wayland_backend_ops_t * wl_backend_ops = NULL;
 
 static const struct wl_registry_listener registry_listener = {
     .global = handle_global,
@@ -126,7 +127,13 @@ lv_result_t lv_wayland_init(void)
         return LV_RESULT_INVALID;
     }
 
-    lv_wl_ctx.backend_data = wl_backend_ops.init();
+    lv_wl_ctx.backend_data = wl_backend_ops->init();
+    if(!lv_wl_ctx.backend_data) {
+        LV_LOG_ERROR("failed to initialize Wayland backend");
+        wl_display_disconnect(lv_wl_ctx.wl_display);
+        lv_wl_ctx.wl_display = NULL;
+        return LV_RESULT_INVALID;
+    }
 
     /* Add registry listener and wait for registry reception */
     lv_wl_ctx.wl_registry = wl_display_get_registry(lv_wl_ctx.wl_display);
@@ -167,7 +174,7 @@ void lv_wayland_deinit(void)
     lv_wayland_xdg_deinit();
 
     if(is_wayland_initialized) {
-        wl_backend_ops.deinit(lv_wl_ctx.backend_data);
+        wl_backend_ops->deinit(lv_wl_ctx.backend_data);
     }
 
     if(lv_wl_ctx.seat.wl_seat) {
@@ -325,7 +332,7 @@ static void handle_global(void * data, struct wl_registry * registry, uint32_t n
         }
     }
 
-    wl_backend_ops.global_handler(lv_wl_ctx.backend_data, registry, name, interface, version);
+    wl_backend_ops->global_handler(lv_wl_ctx.backend_data, registry, name, interface, version);
 }
 
 static void handle_global_remove(void * data, struct wl_registry * registry, uint32_t name)

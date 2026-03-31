@@ -156,7 +156,7 @@ typedef struct {
     lv_wayland_backend_deinit_t deinit;                     /**< Deinitialize backend context */
 } lv_wayland_backend_ops_t;
 
-extern const lv_wayland_backend_ops_t wl_backend_ops;
+extern const lv_wayland_backend_ops_t * wl_backend_ops;
 
 /** @brief Get the backend-specific display data
  *
