@@ -406,7 +406,7 @@
 /** Draw using cached OpenGLES textures. Requires LV_USE_OPENGLES */
 #define LV_USE_DRAW_OPENGLES 0
 #if LV_USE_DRAW_OPENGLES
-    #define LV_DRAW_OPENGLES_TEXTURE_CACHE_COUNT 64
+    #define LV_DRAW_OPENGLES_TEXTURE_CACHE_SIZE (16 * 1024)
 #endif
 
 /** Draw using espressif PPA accelerator */

@@ -15,6 +15,8 @@ extern "C" {
  *********************/
 
 #include "../../lv_conf_internal.h"
+#include "../../misc/lv_types.h"
+
 #if LV_USE_DRAW_OPENGLES
 
 /*********************
@@ -31,6 +33,7 @@ extern "C" {
 
 void lv_draw_opengles_init(void);
 void lv_draw_opengles_deinit(void);
+size_t lv_draw_opengles_get_texture_cache_size(void);
 
 /**********************
  *      MACROS
