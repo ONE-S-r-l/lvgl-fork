@@ -58,8 +58,8 @@ Enable in lv_conf.h
 
     #define LV_USE_DRAW_OPENGLES 1
 
-    /* Configurable cache count. Bigger cache will improve performance */
-    #define LV_DRAW_OPENGLES_TEXTURE_CACHE_COUNT 64
+    /* Configurable cache size. Bigger cache will improve performance */
+    #define LV_DRAW_OPENGLES_TEXTURE_CACHE_SIZE (16 * 1024)
 
 
 
