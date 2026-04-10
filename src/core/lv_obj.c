@@ -822,6 +822,9 @@ static void draw_scrollbar(lv_obj_t * obj, lv_layer_t * layer)
 static lv_result_t scrollbar_init_draw_dsc(lv_obj_t * obj, lv_draw_rect_dsc_t * dsc)
 {
     lv_draw_rect_dsc_init(dsc);
+    dsc->base.obj = obj;
+    dsc->base.part = LV_PART_SCROLLBAR;
+
     dsc->bg_opa = lv_obj_get_style_bg_opa(obj, LV_PART_SCROLLBAR);
     if(dsc->bg_opa > LV_OPA_MIN) {
         dsc->bg_color = lv_obj_get_style_bg_color(obj, LV_PART_SCROLLBAR);
