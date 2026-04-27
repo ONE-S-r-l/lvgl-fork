@@ -139,6 +139,12 @@ void lv_draw_image(lv_layer_t * layer, const lv_draw_image_dsc_t * dsc, const lv
         lv_draw_task_t * t = lv_draw_add_task(layer, image_coords, LV_DRAW_TASK_TYPE_IMAGE);
         lv_memcpy(t->draw_dsc, &new_image_dsc, sizeof(lv_draw_image_dsc_t));
 
+        if (dsc->scale_x != LV_SCALE_NONE || dsc->scale_y != LV_SCALE_NONE) {
+            LV_LOG_WARN("Image %p (%s): scale_x %d or scale_y %d", dsc->src, lv_image_src_get_type(dsc->src) == LV_IMAGE_SRC_FILE ? (char *)dsc->src : "", dsc->scale_x, dsc->scale_y);
+        } else {
+            LV_LOG_WARN("Image %p (%s): no scaling", dsc->src, lv_image_src_get_type(dsc->src) == LV_IMAGE_SRC_FILE ? (char *)dsc->src : "");
+        }
+
         lv_image_buf_get_transformed_area(&t->_real_area, lv_area_get_width(image_coords), lv_area_get_height(image_coords),
                                           dsc->rotation, dsc->scale_x, dsc->scale_y, &dsc->pivot);
         lv_area_move(&t->_real_area, image_coords->x1, image_coords->y1);
