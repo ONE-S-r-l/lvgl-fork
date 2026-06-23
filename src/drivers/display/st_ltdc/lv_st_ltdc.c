@@ -157,7 +157,7 @@ static void flush_cb(lv_display_t * disp, const lv_area_t * area, uint8_t * px_m
         if(flush_is_last && lv_display_is_double_buffered(disp)) {
             HAL_LTDC_SetAddress_NoReload(&hltdc, (uint32_t)px_map, layer_idx);
             g_data.layer_interrupt_is_owned[layer_idx] = true;
-            HAL_LTDC_Reload(&hltdc, LTDC_RELOAD_VERTICAL_BLANKING);
+            HAL_LTDC_Reload(&hltdc, LTDC_RELOAD_IMMEDIATE);
         }
         else {
             g_data.disp_flushed_in_flush_cb[layer_idx] = true;
@@ -226,10 +226,7 @@ static void flush_cb(lv_display_t * disp, const lv_area_t * area, uint8_t * px_m
 
 static void flush_wait_cb(lv_display_t * disp)
 {
-    uint32_t layer_idx = (uint32_t)(uintptr_t)lv_display_get_driver_data(disp);
-    if(!g_data.disp_flushed_in_flush_cb[layer_idx]) {
-        SYNC_WAIT(layer_idx);
-    }
+    (void) disp;
 }
 
 static lv_color_format_t get_lv_cf_from_layer_cf(uint32_t cf)
