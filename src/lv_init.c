@@ -290,6 +290,13 @@ void lv_init(void)
     lv_sysmon_builtin_init();
 #endif
 
+#if LV_IMAGE_CACHE_POOL_SIZE > 0
+    /*Route image-cache pixel payloads to a dedicated pool (e.g. external memory).
+     *Must run after the draw units wired their flush/invalidate callbacks and
+     *before the image cache is created.*/
+    lv_draw_buf_image_pool_init();
+#endif
+
     lv_image_decoder_init(LV_CACHE_DEF_SIZE, LV_IMAGE_HEADER_CACHE_DEF_CNT);
     lv_bin_decoder_init();  /*LVGL built-in binary image decoder*/
 

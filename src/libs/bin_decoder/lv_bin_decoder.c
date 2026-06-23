@@ -274,7 +274,29 @@ lv_result_t lv_bin_decoder_open(lv_image_decoder_t * decoder, lv_image_decoder_d
             if(dsc->args.use_indexed) {
                 /*Palette for indexed image and whole image of A8 image are always loaded to RAM for simplicity*/
                 res = load_indexed(decoder, dsc);
-                use_directly = true; /*If draw unit supports indexed image, it can be used directly.*/
+#if LV_BIN_DECODER_CACHE_NATIVE
+                /*load_indexed wraps the in-flash indexed image (palette + index data) zero-copy.
+                 *Mirror it into a RAM cache buffer so the draw unit renders from RAM, not flash.
+                 *Skip LV_IMAGE_FLAGS_ALLOCATED images (already RAM-resident draw buffers).*/
+                if(res == LV_RESULT_OK
+                   && !(image->header.flags & LV_IMAGE_FLAGS_ALLOCATED)
+                   && lv_image_cache_is_enabled() && !dsc->args.no_cache) {
+                    lv_draw_buf_t * ram = lv_draw_buf_dup_ex(image_cache_draw_buf_handlers,
+                                                             (lv_draw_buf_t *)dsc->decoded);
+                    if(ram == NULL) {
+                        LV_LOG_ERROR("No memory to cache native indexed image");
+                        free_decoder_data(dsc);
+                        return LV_RESULT_INVALID;
+                    }
+                    decoder_data->decoded = ram; /*Free on close if it doesn't end up in cache*/
+                    dsc->decoded = ram;
+                    /*use_directly stays false -> common tail runs post-process + add_to_cache*/
+                }
+                else
+#endif
+                {
+                    use_directly = true; /*If draw unit supports indexed image, it can be used directly.*/
+                }
             }
             else {
                 res = decode_indexed(decoder, dsc);
@@ -312,14 +334,33 @@ lv_result_t lv_bin_decoder_open(lv_image_decoder_t * decoder, lv_image_decoder_d
             }
 
             if(res == LV_RESULT_OK) {
-                dsc->decoded = decoded;
-
                 if(decoded->header.stride == 0) {
                     /*Use the auto calculated value from decoder_info callback*/
                     decoded->header.stride = dsc->header.stride;
                 }
 
-                use_directly = true; /*A variable image that can be used directly.*/
+#if LV_BIN_DECODER_CACHE_NATIVE
+                /*Mirror the in-flash image into a RAM cache buffer and render from there.
+                 *Only plain C-arrays (not LV_IMAGE_FLAGS_ALLOCATED draw buffers, which are
+                 *already RAM-resident) reach this branch.*/
+                if(!(image->header.flags & LV_IMAGE_FLAGS_ALLOCATED)
+                   && lv_image_cache_is_enabled() && !dsc->args.no_cache) {
+                    lv_draw_buf_t * ram = lv_draw_buf_dup_ex(image_cache_draw_buf_handlers, decoded);
+                    if(ram == NULL) {
+                        LV_LOG_ERROR("No memory to cache native image");
+                        free_decoder_data(dsc);
+                        return LV_RESULT_INVALID;
+                    }
+                    decoder_data->decoded = ram; /*Free on close if it doesn't end up in cache*/
+                    dsc->decoded = ram;
+                    /*use_directly stays false -> common tail runs post-process + add_to_cache*/
+                }
+                else
+#endif
+                {
+                    dsc->decoded = decoded;
+                    use_directly = true; /*A variable image that can be used directly.*/
+                }
             }
         }
     }

@@ -43,6 +43,23 @@ struct _lv_draw_buf_handlers_t {
  */
 void lv_draw_buf_init_handlers(void);
 
+/**
+ * Create a dedicated memory pool for image-cache pixel payloads and route the
+ * image draw buffer handlers' malloc/free to it. Called from lv_init() after the
+ * draw units have wired their cache (flush/invalidate) callbacks.
+ * Only compiled/defined when LV_IMAGE_CACHE_POOL_SIZE > 0.
+ */
+void lv_draw_buf_image_pool_init(void);
+
+#if LV_IMAGE_CACHE_POOL_SIZE > 0 && LV_USE_MEM_MONITOR
+#include "../stdlib/lv_mem.h"
+/**
+ * Fill a monitor struct with usage statistics of the dedicated image cache pool.
+ * @param mon  pointer to an lv_mem_monitor_t to populate
+ */
+void lv_draw_buf_image_pool_monitor(lv_mem_monitor_t * mon);
+#endif
+
 /**********************
  *      MACROS
  **********************/

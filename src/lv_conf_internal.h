@@ -240,6 +240,21 @@
             #endif
         #endif
     #endif
+    /*Dedicated memory pool for image-cache pixel payloads (0 size: feature disabled)*/
+    #ifndef LV_IMAGE_CACHE_POOL_SIZE
+        #ifdef CONFIG_LV_IMAGE_CACHE_POOL_SIZE
+            #define LV_IMAGE_CACHE_POOL_SIZE CONFIG_LV_IMAGE_CACHE_POOL_SIZE
+        #else
+            #define LV_IMAGE_CACHE_POOL_SIZE 0
+        #endif
+    #endif
+    #ifndef LV_IMAGE_CACHE_POOL_ADR
+        #ifdef CONFIG_LV_IMAGE_CACHE_POOL_ADR
+            #define LV_IMAGE_CACHE_POOL_ADR CONFIG_LV_IMAGE_CACHE_POOL_ADR
+        #else
+            #define LV_IMAGE_CACHE_POOL_ADR 0
+        #endif
+    #endif
 #endif  /*LV_USE_STDLIB_MALLOC == LV_STDLIB_BUILTIN*/
 
 /*====================

@@ -10,7 +10,14 @@
 #undef  printf
 #define printf LV_LOG_ERROR
 
-#define TLSF_MAX_POOL_SIZE (LV_MEM_SIZE + LV_MEM_POOL_EXPAND_SIZE)
+/* The TLSF index is sized for the largest pool that will ever be added. The same
+ * TLSF code serves both the main lv_malloc pool and the (optional) dedicated image
+ * cache pool, so the index must cover whichever is larger. */
+#if LV_IMAGE_CACHE_POOL_SIZE > (LV_MEM_SIZE + LV_MEM_POOL_EXPAND_SIZE)
+    #define TLSF_MAX_POOL_SIZE LV_IMAGE_CACHE_POOL_SIZE
+#else
+    #define TLSF_MAX_POOL_SIZE (LV_MEM_SIZE + LV_MEM_POOL_EXPAND_SIZE)
+#endif
 
 #if !defined(_DEBUG)
     #define _DEBUG 0

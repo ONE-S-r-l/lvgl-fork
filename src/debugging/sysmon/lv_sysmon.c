@@ -17,6 +17,7 @@
 #include "../../stdlib/lv_string.h"
 #include "../../widgets/label/lv_label.h"
 #include "../../display/lv_display_private.h"
+#include "../../draw/lv_draw_buf_private.h"
 
 /*********************
  *      DEFINES
@@ -399,12 +400,34 @@ static void mem_observer_cb(lv_observer_t * observer, lv_subject_t * subject)
     size_t used_kb_tenth = (used_size - (used_kb * 1024)) / 102;
     size_t max_used_kb = mon->max_used / 1024;
     size_t max_used_kb_tenth = (mon->max_used - (max_used_kb * 1024)) / 102;
+
+#if LV_IMAGE_CACHE_POOL_SIZE > 0
+    /*Also report the dedicated image cache pool (separate TLSF instance,
+     *invisible to lv_mem_monitor). Same format, prefixed with "img".*/
+    lv_mem_monitor_t img;
+    lv_draw_buf_image_pool_monitor(&img);
+    size_t img_used_size = img.total_size - img.free_size;
+    size_t img_used_kb = img_used_size / 1024;
+    size_t img_used_kb_tenth = (img_used_size - (img_used_kb * 1024)) / 102;
+    size_t img_max_used_kb = img.max_used / 1024;
+    size_t img_max_used_kb_tenth = (img.max_used - (img_max_used_kb * 1024)) / 102;
+    lv_label_set_text_fmt(label,
+                          "%zu.%zu kB (%d%%)\n"
+                          "%zu.%zu kB max, %d%% frag.\n"
+                          "img %zu.%zu kB (%d%%)\n"
+                          "img %zu.%zu kB max, %d%% frag.",
+                          used_kb, used_kb_tenth, mon->used_pct,
+                          max_used_kb, max_used_kb_tenth, mon->frag_pct,
+                          img_used_kb, img_used_kb_tenth, img.used_pct,
+                          img_max_used_kb, img_max_used_kb_tenth, img.frag_pct);
+#else
     lv_label_set_text_fmt(label,
                           "%zu.%zu kB (%d%%)\n"
                           "%zu.%zu kB max, %d%% frag.",
                           used_kb, used_kb_tenth, mon->used_pct,
                           max_used_kb, max_used_kb_tenth,
                           mon->frag_pct);
+#endif
 }
 
 #endif

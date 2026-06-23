@@ -81,6 +81,16 @@
         #undef LV_MEM_POOL_INCLUDE
         #undef LV_MEM_POOL_ALLOC
     #endif
+
+    /** Dedicated memory pool for image-cache pixel payloads.
+     *  When > 0, decoded-image buffers managed by the image cache are allocated from a
+     *  separate TLSF pool at LV_IMAGE_CACHE_POOL_ADR instead of the main lv_malloc pool.
+     *  This keeps large image data out of the main (e.g. fast internal) pool; only the
+     *  payload moves, descriptors and cache bookkeeping still use the main pool.
+     *  Size as: LV_CACHE_DEF_SIZE + 2 x largest decoded image + headroom. */
+    #define LV_IMAGE_CACHE_POOL_SIZE  0          /**< [bytes] 0: disabled */
+    /** Fixed, memory-mapped (MPU-cacheable) base address for the image cache pool. */
+    #define LV_IMAGE_CACHE_POOL_ADR   0
 #endif  /*LV_USE_STDLIB_MALLOC == LV_STDLIB_BUILTIN*/
 
 /*====================
