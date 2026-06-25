@@ -103,6 +103,7 @@ extern "C" {
 
 #include "src/libs/barcode/lv_barcode.h"
 #include "src/libs/bin_decoder/lv_bin_decoder.h"
+#include "src/libs/emmc_decoder/lv_emmc_decoder.h"
 #include "src/libs/bmp/lv_bmp.h"
 #include "src/libs/rle/lv_rle.h"
 #include "src/libs/fsdrv/lv_fsdrv.h"
