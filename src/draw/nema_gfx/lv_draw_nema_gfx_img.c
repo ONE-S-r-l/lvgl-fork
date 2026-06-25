@@ -64,6 +64,10 @@ static void _draw_nema_gfx_img(lv_draw_task_t * t, const lv_draw_image_dsc_t * d
     const lv_image_header_t * header = &decoded->header;
 
     bool masked = dsc->bitmap_mask_src != NULL;
+#if LV_USE_EMMC_DECODER
+    lv_image_decoder_dsc_t mask_dsc;
+    bool mask_opened = false;
+#endif
 
     lv_area_t rel_clip_area;
     lv_area_copy(&rel_clip_area, clipped_img_area);
@@ -132,6 +136,37 @@ static void _draw_nema_gfx_img(lv_draw_task_t * t, const lv_draw_image_dsc_t * d
 
     if(!has_transform && masked && !recolor) {
         if(dsc->bitmap_mask_src->header.cf == LV_COLOR_FORMAT_A8 || dsc->bitmap_mask_src->header.cf == LV_COLOR_FORMAT_L8) {
+#if LV_USE_EMMC_DECODER
+            /*Decode the mask through the image decoder instead of dereferencing
+             *bitmap_mask_src->data directly. With the eMMC decoder the payload may live
+             *on a block device that is not memory-mapped, so the raw descriptor pointer
+             *is not a valid address; the decoder fetches it into GPU-readable RAM. (The
+             *SW renderer always does this; see lv_draw_sw_img.c.)*/
+            if(lv_image_decoder_open(&mask_dsc, dsc->bitmap_mask_src, NULL) == LV_RESULT_OK
+               && mask_dsc.decoded != NULL) {
+                mask_opened = true;
+                const lv_draw_buf_t * mask = mask_dsc.decoded;
+                const uint8_t * mask_buf = mask->data;
+
+                blending_mode |= NEMA_BLOP_STENCIL_TXTY;
+
+                const lv_area_t * image_area;
+                lv_area_t mask_area;
+                if(lv_area_get_width(&dsc->image_area) < 0) image_area = img_coords;
+                else image_area = &dsc->image_area;
+
+                lv_area_set(&mask_area, 0, 0, mask->header.w - 1, mask->header.h - 1);
+                lv_area_align(image_area, &mask_area, LV_ALIGN_CENTER, 0, 0);
+
+                mask_buf += (uint32_t)mask->header.stride * (img_coords->y1 - mask_area.y1)
+                            + (img_coords->x1 - mask_area.x1);
+
+                nema_bind_tex(NEMA_TEX3, (uintptr_t)NEMA_VIRT2PHYS(mask_buf), mask->header.w, mask->header.h,
+                              lv_nemagfx_mask_cf_to_nema(mask->header.cf),
+                              mask->header.stride, NEMA_FILTER_BL);
+            }
+#else
+            /*Mask payload is memory-mapped: bind the descriptor data directly (cheapest).*/
             blending_mode |= NEMA_BLOP_STENCIL_TXTY;
             const lv_image_dsc_t * mask = dsc->bitmap_mask_src;
             const uint8_t * mask_buf = mask->data;
@@ -149,6 +184,7 @@ static void _draw_nema_gfx_img(lv_draw_task_t * t, const lv_draw_image_dsc_t * d
             nema_bind_tex(NEMA_TEX3, (uintptr_t)NEMA_VIRT2PHYS(mask_buf), mask->header.w, mask->header.h,
                           lv_nemagfx_mask_cf_to_nema(mask->header.cf),
                           mask->header.stride, NEMA_FILTER_BL);
+#endif /*LV_USE_EMMC_DECODER*/
         }
     }
 
@@ -194,6 +230,15 @@ static void _draw_nema_gfx_img(lv_draw_task_t * t, const lv_draw_image_dsc_t * d
 
     nema_cl_submit(&(draw_nema_gfx_unit->cl));
 
+#if LV_USE_EMMC_DECODER
+    if(mask_opened) {
+        /*The GPU reads the mask texture as part of this command list. Wait for it to
+         *finish before releasing the decoded mask, since close may free the buffer when
+         *the image cache is disabled. (When cached, close only releases the reference.)*/
+        nema_cl_wait(&(draw_nema_gfx_unit->cl));
+        lv_image_decoder_close(&mask_dsc);
+    }
+#endif /*LV_USE_EMMC_DECODER*/
 }
 
 /*NemaGFX does mask operations with A8,A4,A2 and A1 formats*/

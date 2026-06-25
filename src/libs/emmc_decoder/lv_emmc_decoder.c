@@ -116,6 +116,26 @@ lv_result_t lv_emmc_decoder_open(lv_image_decoder_t * decoder, lv_image_decoder_
         return LV_RESULT_INVALID;
     }
 
+    /*Trace BOTH header sources to surface any inconsistency:
+     * - image->header : the raw lv_image_dsc_t descriptor in flash (stride may be 0 for
+     *                   v8-legacy assets); image->data_size is how many bytes we read.
+     * - dsc->header   : the copy the core completed (computed stride) used to size the
+     *                   destination buffer (decoded->data_size).
+     * A data_size vs buf_size divergence means the raw read is being truncated by LV_MIN.*/
+    LV_LOG_USER("EMMC decode src=%p data=%p offset=%" LV_PRIu32,
+                (void *)image, (const void *)image->data, offset);
+    LV_LOG_USER("  image->header: cf=%d %" LV_PRIu32 "x%" LV_PRIu32 " stride=%" LV_PRIu32
+                " flags=0x%" LV_PRIx32 " data_size=%" LV_PRIu32,
+                (int)image->header.cf, (uint32_t)image->header.w, (uint32_t)image->header.h,
+                (uint32_t)image->header.stride, (uint32_t)image->header.flags,
+                (uint32_t)image->data_size);
+    LV_LOG_USER("  dsc->header  : cf=%d %" LV_PRIu32 "x%" LV_PRIu32 " stride=%" LV_PRIu32
+                " flags=0x%" LV_PRIx32 " buf_size=%" LV_PRIu32 " -> %p%s",
+                (int)dsc->header.cf, (uint32_t)dsc->header.w, (uint32_t)dsc->header.h,
+                (uint32_t)dsc->header.stride, (uint32_t)dsc->header.flags,
+                (uint32_t)decoded->data_size, (void *)decoded->data,
+                (image->data_size != decoded->data_size) ? "  <-- SIZE MISMATCH" : "");
+
     /*Fetch the raw payload. Use LV_MIN like lv_draw_buf_dup_ex: create_ex sizes the buffer
      *from w/h/cf/stride which may differ from the descriptor's data_size (indexed+palette,
      *RGB565A8 two planes, legacy stride). NeMa renders the format natively, no conversion.*/
