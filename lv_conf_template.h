@@ -1025,6 +1025,13 @@
 /** Decode bin images to RAM */
 #define LV_BIN_DECODER_RAM_LOAD 0
 
+/** Custom decoder that fetches image payloads from a raw (filesystem-less) eMMC/SD region
+ *  into the image cache pool. Assets are referenced by their linker address
+ *  (LV_IMAGE_SRC_VARIABLE): payload bytes live on the block device, lv_image_dsc_t
+ *  descriptors stay in flash. Requires LV_IMAGE_CACHE_POOL_SIZE > 0 and a board-registered
+ *  read callback via lv_emmc_decoder_set_source(). */
+#define LV_USE_EMMC_DECODER 0
+
 /** RLE decompress library */
 #define LV_USE_RLE 0
 

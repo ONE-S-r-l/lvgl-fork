@@ -3231,6 +3231,15 @@
     #endif
 #endif
 
+/** Custom decoder for image payloads on a raw (filesystem-less) eMMC/SD region */
+#ifndef LV_USE_EMMC_DECODER
+    #ifdef CONFIG_LV_USE_EMMC_DECODER
+        #define LV_USE_EMMC_DECODER CONFIG_LV_USE_EMMC_DECODER
+    #else
+        #define LV_USE_EMMC_DECODER 0
+    #endif
+#endif
+
 /** RLE decompress library */
 #ifndef LV_USE_RLE
     #ifdef CONFIG_LV_USE_RLE

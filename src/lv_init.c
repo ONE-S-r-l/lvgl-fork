@@ -21,6 +21,7 @@
 #include "indev/lv_indev_private.h"
 #include "layouts/lv_layout_private.h"
 #include "libs/bin_decoder/lv_bin_decoder.h"
+#include "libs/emmc_decoder/lv_emmc_decoder.h"
 #include "libs/bmp/lv_bmp.h"
 #include "libs/ffmpeg/lv_ffmpeg.h"
 #include "libs/freetype/lv_freetype.h"
@@ -299,6 +300,13 @@ void lv_init(void)
 
     lv_image_decoder_init(LV_CACHE_DEF_SIZE, LV_IMAGE_HEADER_CACHE_DEF_CNT);
     lv_bin_decoder_init();  /*LVGL built-in binary image decoder*/
+
+#if LV_USE_EMMC_DECODER
+    /*Registered AFTER the bin decoder so it is consulted first (decoders are tried
+     *most-recently-created first): it claims image payloads that live on the raw eMMC
+     *region and declines everything else.*/
+    lv_emmc_decoder_init();
+#endif
 
 #if LV_USE_DRAW_VG_LITE
     lv_draw_vg_lite_init();
