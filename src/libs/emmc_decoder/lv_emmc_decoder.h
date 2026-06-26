@@ -32,21 +32,38 @@ extern "C" {
 
 #include "../../draw/lv_image_decoder.h"
 
+/*********************
+ *      DEFINES
+ *********************/
+
+/**
+ * Backing-device block size. The decoder rounds both the destination buffer (in the
+ * image cache pool) and the read length up to this value, so the board reader can
+ * transfer whole blocks straight into the buffer. Asset payload offsets are already a
+ * multiple of this because the `*_map` arrays are aligned to it in their linker section,
+ * so offset + length are both block-aligned -> pure block I/O, no bounce buffer.
+ */
+#ifndef LV_EMMC_BLOCK_SIZE
+    #define LV_EMMC_BLOCK_SIZE 512
+#endif
+
 /**********************
  *      TYPEDEFS
  **********************/
 
 /**
  * Board-provided block-device reader.
- * @param byte_offset  offset of the payload inside the asset blob (relative to its base)
- * @param dst          destination buffer (allocated from the image cache pool)
- * @param len          number of bytes to read
+ * @param byte_offset  offset of the payload inside the asset blob (relative to its base);
+ *                     a multiple of LV_EMMC_BLOCK_SIZE
+ * @param dst          destination buffer (allocated from the image cache pool); its
+ *                     capacity is rounded up to LV_EMMC_BLOCK_SIZE
+ * @param len          number of bytes to read; a multiple of LV_EMMC_BLOCK_SIZE
  * @return             true on success
  *
- * The board implementation adds the eMMC base block, issues the block read
- * (e.g. HAL_MMC_ReadBlocks_DMA), handles the unaligned tail block, and INVALIDATES
- * the CPU D-cache for [dst, dst+len) after the transfer (the DMA fills the cacheable
- * pool buffer behind the CPU).
+ * Because byte_offset, len and the dst capacity are all block-aligned, the board can do a
+ * single whole-block transfer (e.g. HAL_MMC_ReadBlocks_DMA) with no partial-tail handling.
+ * It must add the eMMC base block and INVALIDATE the CPU D-cache for [dst, dst+len) after
+ * the transfer (the DMA fills the cacheable pool buffer behind the CPU).
  */
 typedef bool (*lv_emmc_read_cb_t)(uint32_t byte_offset, void * dst, uint32_t len);
 

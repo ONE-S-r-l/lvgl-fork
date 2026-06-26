@@ -30,6 +30,9 @@
 
 #include "../stdlib/builtin/lv_tlsf.h"
 #include "../stdlib/lv_mem.h"
+#if LV_USE_EMMC_DECODER
+    #include "../libs/emmc_decoder/lv_emmc_decoder.h"   /*LV_EMMC_BLOCK_SIZE*/
+#endif
 
 /*********************
  *      DEFINES
@@ -99,10 +102,24 @@ static void * img_pool_malloc(size_t size, lv_color_format_t color_format)
 {
     LV_UNUSED(color_format);
 
+    size_t requested = size; /*size LVGL asked for (the draw buffer's data_size)*/
+
+#if LV_USE_EMMC_DECODER
+    /*Round the payload up to the device block size so the eMMC decoder can transfer whole
+     *blocks straight into this buffer (asset offsets are already block-aligned), with no
+     *bounce buffer for a partial tail block. Costs up to LV_EMMC_BLOCK_SIZE-1 bytes/buffer.*/
+    size = LV_ROUND_UP(size, LV_EMMC_BLOCK_SIZE);
+#endif
     /*Mirror the default buf_malloc: allocate extra so lv_draw_buf_align() in
      *lv_draw_buf_create_ex() can always align within the returned block.*/
     size += LV_DRAW_BUF_ALIGN - 1;
     void * buf = lv_tlsf_malloc(img_tlsf, size);
+
+    // /*Trace: requested data_size -> size asked of TLSF (rounded+aligned) -> actual block.*/
+    // LV_LOG_USER("img pool malloc: requested=%u tlsf_req=%u block=%u -> %p",
+    //             (unsigned)requested, (unsigned)size,
+    //             (unsigned)(buf ? lv_tlsf_block_size(buf) : 0), buf);
+
     if(buf) {
         img_used += lv_tlsf_block_size(buf);
         if(img_used > img_max_used) img_max_used = img_used;

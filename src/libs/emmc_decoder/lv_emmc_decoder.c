@@ -122,24 +122,30 @@ lv_result_t lv_emmc_decoder_open(lv_image_decoder_t * decoder, lv_image_decoder_
      * - dsc->header   : the copy the core completed (computed stride) used to size the
      *                   destination buffer (decoded->data_size).
      * A data_size vs buf_size divergence means the raw read is being truncated by LV_MIN.*/
-    LV_LOG_USER("EMMC decode src=%p data=%p offset=%" LV_PRIu32,
-                (void *)image, (const void *)image->data, offset);
-    LV_LOG_USER("  image->header: cf=%d %" LV_PRIu32 "x%" LV_PRIu32 " stride=%" LV_PRIu32
-                " flags=0x%" LV_PRIx32 " data_size=%" LV_PRIu32,
-                (int)image->header.cf, (uint32_t)image->header.w, (uint32_t)image->header.h,
-                (uint32_t)image->header.stride, (uint32_t)image->header.flags,
-                (uint32_t)image->data_size);
-    LV_LOG_USER("  dsc->header  : cf=%d %" LV_PRIu32 "x%" LV_PRIu32 " stride=%" LV_PRIu32
-                " flags=0x%" LV_PRIx32 " buf_size=%" LV_PRIu32 " -> %p%s",
-                (int)dsc->header.cf, (uint32_t)dsc->header.w, (uint32_t)dsc->header.h,
-                (uint32_t)dsc->header.stride, (uint32_t)dsc->header.flags,
-                (uint32_t)decoded->data_size, (void *)decoded->data,
-                (image->data_size != decoded->data_size) ? "  <-- SIZE MISMATCH" : "");
+    // LV_LOG_USER("EMMC decode src=%p data=%p offset=%" LV_PRIu32,
+    //             (void *)image, (const void *)image->data, offset);
+    // LV_LOG_USER("  image->header: cf=%d %" LV_PRIu32 "x%" LV_PRIu32 " stride=%" LV_PRIu32
+    //             " flags=0x%" LV_PRIx32 " data_size=%" LV_PRIu32,
+    //             (int)image->header.cf, (uint32_t)image->header.w, (uint32_t)image->header.h,
+    //             (uint32_t)image->header.stride, (uint32_t)image->header.flags,
+    //             (uint32_t)image->data_size);
+    // LV_LOG_USER("  dsc->header  : cf=%d %" LV_PRIu32 "x%" LV_PRIu32 " stride=%" LV_PRIu32
+    //             " flags=0x%" LV_PRIx32 " buf_size=%" LV_PRIu32 " -> %p%s",
+    //             (int)dsc->header.cf, (uint32_t)dsc->header.w, (uint32_t)dsc->header.h,
+    //             (uint32_t)dsc->header.stride, (uint32_t)dsc->header.flags,
+    //             (uint32_t)decoded->data_size, (void *)decoded->data,
+    //             (image->data_size != decoded->data_size) ? "  <-- SIZE MISMATCH" : "");
 
     /*Fetch the raw payload. Use LV_MIN like lv_draw_buf_dup_ex: create_ex sizes the buffer
      *from w/h/cf/stride which may differ from the descriptor's data_size (indexed+palette,
      *RGB565A8 two planes, legacy stride). NeMa renders the format natively, no conversion.*/
     uint32_t len = LV_MIN(image->data_size, decoded->data_size);
+#if LV_IMAGE_CACHE_POOL_SIZE > 0
+    /*The image pool rounds buffer capacity up to LV_EMMC_BLOCK_SIZE, and asset offsets are
+     *block-aligned, so read whole blocks: the board reader needs no partial-tail handling.
+     *The extra bytes land in the buffer's block padding and are ignored by the renderer.*/
+    len = LV_ROUND_UP(len, LV_EMMC_BLOCK_SIZE);
+#endif
     if(!emmc_read_cb(offset, decoded->data, len)) {
         LV_LOG_ERROR("eMMC read failed at offset %" LV_PRIu32, offset);
         lv_draw_buf_destroy(decoded);
@@ -159,6 +165,7 @@ lv_result_t lv_emmc_decoder_open(lv_image_decoder_t * decoder, lv_image_decoder_
     }
     if(adjusted != decoded) {
         /*post_process allocated a new buffer (also from the image pool); drop the original*/
+        // LV_LOG_USER("EMMC decode post_process allocated a new buffer");
         lv_draw_buf_destroy(decoded);
         decoded = adjusted;
     }
